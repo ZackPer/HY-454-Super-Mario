@@ -1,6 +1,15 @@
 SuperLuigi/packages/Allegro.5.2.6/
 SuperLuigi/packages/AllegroDeps.1.11.0/
+<<<<<<< HEAD
 SuperLuigi/SuperLuigi/Debug/
 SuperLuigi/Debug/SuperLuigi.exe
 SuperLuigi/Debug/
 SuperLuigi/.vs/
+=======
+SuperLuigi/SuperLuigi/x64/
+SuperLuigi/x64/Debug/
+SuperLuigi/.vs/
+SuperLuigi/SuperLuigi/SuperLuigi.vcxproj
+SuperLuigi/SuperLuigi/SuperLuigi.vcxproj.filters
+SuperLuigi/package-lock.json
+>>>>>>> 993b666fc67a01e8784cf7e519e3db9385a73964
