@@ -3,3 +3,6 @@ SuperLuigi/packages/AllegroDeps.1.11.0/
 SuperLuigi/x64/
 SuperLuigi/SuperLuigi/x64/
 SuperLuigi/.vs/
+SuperLuigi/SuperLuigi/SuperLuigi.vcxproj
+SuperLuigi/SuperLuigi/SuperLuigi.vcxproj.filters
+SuperLuigi/package-lock.json
