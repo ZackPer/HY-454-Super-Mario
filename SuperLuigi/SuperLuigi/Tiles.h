@@ -1,4 +1,5 @@
 #include <allegro5/allegro.h>
+#include <stdio.h>
 //slide 12 dialeksh 6
 typedef unsigned short Dim;
 struct Rect { int x, y, w, h; };
@@ -99,4 +100,20 @@ void SetTile(TileMap* m, Dim col, Dim row, Index index)
 Index GetTile(const TileMap* m, Dim col, Dim row)
 {
 	return (*m)[row][col];
+}
+
+void WriteBinMap(const TileMap* m, FILE* fp) {
+	fwrite((m, sizeof(TileMap), 1, fp);
+}
+
+void ReadBinMap(TileMap* m, FILE* fp) {
+	/*binary formatted read, like descent parsing*/
+}
+
+void WriteTextMap(const TileMap*, FILE* fp) {
+	/*custom write in text format*/
+}
+
+bool ReadTextMap(TileMap* m, FILE* fp) {
+	/*parsing*/
 }
