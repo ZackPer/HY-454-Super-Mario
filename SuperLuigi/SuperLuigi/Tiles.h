@@ -69,18 +69,18 @@ Index MakeIndex2(byte row, byte col)
 {
 	return (MUL_TILE_WIDTH(col) << TILEX_SHIFT) | MUL_TILE_HEIGHT(row);
 }
-
+//changes target bitmap
 void PutTile(ALLEGRO_BITMAP* dest, Dim x, Dim y, ALLEGRO_BITMAP* tiles, Index tile) {
 	al_set_target_bitmap(dest);
 	al_draw_bitmap_region(
-		tiles, //bitmap
-		TileX3(tile),//sx
-		TileY3(tile),//sy
-		TILE_WIDTH,//sw
-		TILE_HEIGHT,//sh
-		x,//dx
-		y,//dy
-		0//flags
+		tiles,			//bitmap
+		TileX3(tile),	//sx
+		TileY3(tile),	//sy
+		TILE_WIDTH,		//sw
+		TILE_HEIGHT,	//sh
+		x,				//dx
+		y,				//dy
+		0				//flags
 	);
 }
 
@@ -102,9 +102,9 @@ Index GetTile(const TileMap* m, Dim col, Dim row)
 	return (*m)[row][col];
 }
 
-void WriteBinMap(const TileMap* m, FILE* fp) {
-	fwrite((m, sizeof(TileMap), 1, fp);
-}
+//void WriteBinMap(const TileMap* m, FILE* fp) {
+//	fwrite((m, sizeof(TileMap), 1, fp);
+//}
 
 void ReadBinMap(TileMap* m, FILE* fp) {
 	/*binary formatted read, like descent parsing*/
@@ -116,4 +116,5 @@ void WriteTextMap(const TileMap*, FILE* fp) {
 
 bool ReadTextMap(TileMap* m, FILE* fp) {
 	/*parsing*/
+	return true;
 }

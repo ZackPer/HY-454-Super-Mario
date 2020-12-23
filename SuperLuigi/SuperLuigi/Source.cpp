@@ -2,14 +2,51 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <iostream>
+#include "Tiles.h"
+#include <vector>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 #define WIDTH	1024
 #define	HEIGHT	768
 
+std::vector<std::vector<int>> getTileMapIDs(std::string filename) {
+	std::string line;
+	std::vector<std::vector<int>> TileIDs;
+	std::ifstream input(filename);
+
+	int id;
+	if (input.is_open())
+		while (std::getline(input, line)) {
+			std::vector<int> row;
+			std::stringstream input_stringstream(line);
+			while (getline(input_stringstream, line, ',')) {
+				row.push_back(std::stoi(line));
+			}
+			TileIDs.push_back(row);
+		}
+	return TileIDs;
+}
+
+int getColFromID(int ID, int TileSetWidth) {
+	return ID % TileSetWidth;
+}
+
+int getRowFromID(int ID, int TileSetWidth) {
+	return ID / TileSetWidth;
+}
+
+
 int main() {
 	ALLEGRO_DISPLAY *display;
-	ALLEGRO_BITMAP	*image = NULL;
-	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+	ALLEGRO_BITMAP* image = nullptr;
+	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
+
+	ALLEGRO_BITMAP* tileset = nullptr;
+	ALLEGRO_BITMAP* screenBitmap = nullptr;
+
+	std::vector<std::vector<int>> TileMapIndexes = getTileMapIDs("CSVMaps/mario.csv");
 
 	if(!al_init())
 		return -1;
@@ -23,7 +60,8 @@ int main() {
 	al_install_keyboard();
 	al_init_image_addon();
 
-	image = al_load_bitmap("god_help_us.png");
+	image = al_load_bitmap("Tiles/super_mario_tiles.png");
+	screenBitmap = al_create_bitmap(WIDTH, HEIGHT);
 
 	if (!image)
 		return -1;
@@ -39,8 +77,15 @@ int main() {
 				break;
 			}
 		}
+		for (int i = 0; i < TileMapIndexes.size(); i++) {
+			for (int j = 0; j<TileMapIndexes[i].size(); j++) {
+				PutTile(screenBitmap, i*16, j*16, image, MakeIndex2(getRowFromID(TileMapIndexes[j][i], 19), getColFromID(TileMapIndexes[j][i], 19)));
+			}
+			
+		}
 
-		al_draw_bitmap(image, al_get_bitmap_width(image)/2, al_get_bitmap_height(image) / 2,0);
+		al_set_target_bitmap(al_get_backbuffer(display));
+		al_draw_bitmap(screenBitmap, 0, 0, 0);
 		al_flip_display();
 	}
 
