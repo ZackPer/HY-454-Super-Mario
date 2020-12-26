@@ -70,17 +70,21 @@ Index MakeIndex2(byte row, byte col)
 	return (MUL_TILE_WIDTH(col) << TILEX_SHIFT) | MUL_TILE_HEIGHT(row);
 }
 //changes target bitmap
+
+#define TILE_SCALE 4
 void PutTile(ALLEGRO_BITMAP* dest, Dim x, Dim y, ALLEGRO_BITMAP* tiles, Index tile) {
 	al_set_target_bitmap(dest);
-	al_draw_bitmap_region(
-		tiles,			//bitmap
-		TileX3(tile),	//sx
-		TileY3(tile),	//sy
-		TILE_WIDTH,		//sw
-		TILE_HEIGHT,	//sh
-		x,				//dx
-		y,				//dy
-		0				//flags
+	al_draw_scaled_bitmap(
+		tiles, //bitmap
+		TileX3(tile), //sx
+		TileY3(tile), //sy
+		TILE_WIDTH, //sw
+		TILE_HEIGHT, //sh
+		x * TILE_SCALE, //dx
+		y * TILE_SCALE, //dy
+		TILE_WIDTH * TILE_SCALE, //dw
+		TILE_HEIGHT * TILE_SCALE, //sh
+		0
 	);
 }
 
