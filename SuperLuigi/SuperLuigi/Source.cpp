@@ -81,11 +81,10 @@ int main() {
 			for (int j = 0; j<TileMapIndexes[i].size(); j++) {
 				PutTile(screenBitmap, i*16, j*16, image, MakeIndex2(getRowFromID(TileMapIndexes[j][i], 19), getColFromID(TileMapIndexes[j][i], 19)));
 			}
-			
 		}
 
 		al_set_target_bitmap(al_get_backbuffer(display));
-		al_draw_bitmap(screenBitmap, 0, 0, 0);
+		al_draw_scaled_bitmap(screenBitmap, 0, 0, WIDTH, HEIGHT, 0, 0, WIDTH * TILE_SCALE, HEIGHT * TILE_SCALE,0);
 		al_flip_display();
 	}
 
