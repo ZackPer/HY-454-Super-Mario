@@ -34,10 +34,22 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				break;
 			}
+			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				win1.dimensions.y += 2;
+			}
+			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
+				win1.dimensions.y -= 2;
+			}
+			else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				win1.dimensions.x += 2;
+			}
+			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				win1.dimensions.x -= 2;
+			}
 		}
 		TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_set_target_bitmap(al_get_backbuffer(display));
-		al_draw_scaled_bitmap(win1.camera, 0, 0, 160, 160, 0, 0, 160, 160, 0);
+		al_draw_scaled_bitmap(win1.camera, 0, 0, 160, 160, 0, 0, 160 * 3, 160 * 3, 0);
 		al_flip_display();
 	}
 
