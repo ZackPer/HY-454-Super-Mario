@@ -1,11 +1,14 @@
+#pragma once
+
 #include <allegro5/allegro.h>
 #include <stdio.h>
 #include <vector>
-
 #include <fstream>
 #include <string>
 #include <sstream>
-typedef unsigned short Dim;
+
+#include "Types.h"
+
 struct Rect { 
 	int x, y, w, h; 
 	Rect(int x, int y, int w, int h) {
@@ -23,12 +26,7 @@ struct Point {
 	}
 };
 enum BitDepth { bits8 = 1, bits16, bits24, bits32 };
-typedef unsigned short Index;
-typedef std::vector<std::vector<Index>> TileMap;
-typedef unsigned char byte;
 
-#define TILE_WIDTH 16
-#define TILE_HEIGHT 16
 #define ROW_MASK 0x0F
 #define COL_MASK 0xF0
 #define COL_SHIFT 4
