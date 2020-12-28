@@ -69,9 +69,9 @@ Index MakeIndex2(byte row, byte col)
 
 #define TILE_SCALE 2
 void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* destinationBitmap, Point destPoint) {
-	al_set_target_bitmap(destinationBitmap);
+	al_set_target_bitmap(destinationBitmap); //dbitmap
 	al_draw_bitmap_region(
-		sourceBitmap,	//bitmap
+		sourceBitmap,	//sbitmap
 		sourceRect.x,	//sx
 		sourceRect.y,	//sy
 		sourceRect.w,	//sw
@@ -83,17 +83,9 @@ void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* d
 }
 
 void PutTile(ALLEGRO_BITMAP* dest, Dim x, Dim y, ALLEGRO_BITMAP* tiles, Index tile) {
-	al_set_target_bitmap(dest);
-	al_draw_bitmap_region(
-		tiles,			//bitmap
-		TileX3(tile),	//sx
-		TileY3(tile),	//sy
-		TILE_WIDTH,		//sw
-		TILE_HEIGHT,	//sh
-		x,				//dx
-		y,				//dy
-		0				//flags
-	);
+	Rect sourceRect = { TileX3(tile), TileY3(tile), TILE_WIDTH, TILE_HEIGHT };
+	Point destPoint = { x, y};
+	BitmapBlit(tiles, sourceRect, dest, destPoint);
 }
 
 

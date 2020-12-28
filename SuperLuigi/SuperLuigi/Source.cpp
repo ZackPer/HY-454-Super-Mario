@@ -20,9 +20,36 @@ void initViewWindow(
 	);
 }
 
+
+void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
+	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
+	event_queue = al_create_event_queue();
+	al_register_event_source(event_queue, al_get_keyboard_event_source());
+
+
+	while (1) {
+		ALLEGRO_EVENT ev;
+		al_wait_for_event(event_queue, &ev);
+		if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+				break;
+			}
+		}
+		TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
+		al_set_target_bitmap(al_get_backbuffer(display));
+		al_draw_scaled_bitmap(win1.camera, 0, 0, 160, 160, 0, 0, 160, 160, 0);
+		al_flip_display();
+	}
+
+	//destroyAllegroComponents --> make that a delegate
+	[=]() {
+		al_destroy_event_queue(event_queue);
+	};
+}
+
+
 int main() {
 	ALLEGRO_DISPLAY *display;
-	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
 	TileMapIndexes = getTileMapIDs("CSVMaps/mario1.csv");
 	int mapColumns, mapRows;
 	mapRows = TileMapIndexes.size();
@@ -39,9 +66,6 @@ int main() {
 	tileset = al_load_bitmap("Tiles/super_mario_tiles.png");
 	map = al_create_bitmap(mapRows*TILE_HEIGHT, mapColumns*TILE_WIDTH);
 
-	event_queue = al_create_event_queue();
-	al_register_event_source(event_queue, al_get_keyboard_event_source());
-
 	//mapping map indexes to tilesetIndexes
 	TileMap mapTileIndexes;
 	getMapIndexes(mapTileIndexes, TileMapIndexes);
@@ -54,23 +78,15 @@ int main() {
 		win1
 	);
 
-	while (1) {
-		ALLEGRO_EVENT ev;
-		al_wait_for_event(event_queue,&ev);
-		if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
-			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-				break;
-			}
-		}
-		TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
-		al_set_target_bitmap(al_get_backbuffer(display));
-		al_draw_scaled_bitmap(win1.camera, 0, 0, 160, 160, 0, 0, 160, 160 ,0);
-		al_flip_display();
-	}
+	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
+	CoreLoop(display, mapTileIndexes, win1);
+	
 
-	al_destroy_bitmap(tileset);
-	al_destroy_event_queue(event_queue);
-	al_destroy_display(display);
-
+	//destroyAllegroComponents --> make that a delegate
+	[=](){
+		al_destroy_bitmap(tileset);
+		al_destroy_display(display);
+	};
+	
 	return 0;
 }
