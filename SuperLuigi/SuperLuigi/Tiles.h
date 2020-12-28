@@ -108,7 +108,7 @@ void TileTerrainDisplay(TileMap tileMapIndexes, ALLEGRO_BITMAP* dest, const Rect
 		auto endRow = DIV_TILE_HEIGHT(viewWin.y + viewWin.h - 1);
 		dpyX = MOD_TILE_WIDTH(viewWin.x);
 		dpyY = MOD_TILE_WIDTH(viewWin.y);
-		// dpyChanged = false;
+		dpyChanged = false;
 		dpyBuffer = al_create_bitmap(((endCol - startCol)+1) * 16, ((endRow - startRow) + 1)* 16);
 		for (Dim row = startRow; row <= endRow; ++row)
 			for (Dim col = startCol; col <= endCol; ++col)
@@ -195,4 +195,56 @@ void getMapIndexes(TileMap& mapTileIndexes, TileMap tileMapIndexes) {
 			mapTileIndexes[i].push_back(tileMapIndexes[i][j]);
 		}
 	}
+}
+
+int GetMapPixelWidth(void) {
+	return TileMapIndexes[0].size() * TILE_WIDTH;
+}
+
+int GetMapPixelHeight(void) {
+	return TileMapIndexes.size() * TILE_HEIGHT;
+}
+
+
+void Scroll(Rect& viewWin, int dx, int dy) {
+	viewWin.x += dx;
+	viewWin.y += dy;
+}
+
+bool CanScrollHoriz(const Rect& viewWin, int dx) {
+	return viewWin.x >= -dx && (viewWin.x + viewWin.w + dx) <= GetMapPixelWidth();
+}
+
+bool CanScrollVert(const Rect& viewWin, int dy) {
+	return viewWin.y >= -dy && (viewWin.y + viewWin.h + dy) <= GetMapPixelHeight();
+}
+
+static void FilterScrollDistance(
+	int		viewStartCoord,  // x or y
+	int		viewSize,		// w or h
+	int&	d,			   // dx or dy
+	int		maxMapSize    // w or h
+) {
+	auto val = d + viewStartCoord;
+	if (val < 0)
+		d = -viewStartCoord;
+	else
+		if ((val + viewSize) >= maxMapSize)
+			d = maxMapSize - (viewStartCoord + viewSize);
+}
+
+void FilterScroll(const Rect& viewWin, int& dx, int& dy) {
+	FilterScrollDistance(viewWin.x, viewWin.w, dx, GetMapPixelWidth());
+	FilterScrollDistance(viewWin.y, viewWin.h, dy, GetMapPixelHeight());
+}
+
+void ScrollWithBoundCheck(
+	Rect& viewWin,
+	int&   dx,
+	int&   dy
+) {
+	FilterScroll(viewWin, dx, dy);
+	Scroll(viewWin, dx, dy);
+	//we might change the dpychanged var for cahcing
+	dpyChanged = true;
 }

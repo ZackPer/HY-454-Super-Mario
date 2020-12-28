@@ -26,7 +26,8 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 	event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 
-
+	int dx = 0 , dy = 0;
+	int zachSteps = 2;
 	while (1) {
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
@@ -35,17 +36,21 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				break;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-				win1.dimensions.y += 2;
+				dy += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
-				win1.dimensions.y -= 2;
+				dy -= zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-				win1.dimensions.x += 2;
+				dx += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-				win1.dimensions.x -= 2;
+				dx -= zachSteps;
 			}
+
+			ScrollWithBoundCheck(win1.dimensions, dx, dy);
+
+			dx = dy = 0;
 		}
 		TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_set_target_bitmap(al_get_backbuffer(display));
