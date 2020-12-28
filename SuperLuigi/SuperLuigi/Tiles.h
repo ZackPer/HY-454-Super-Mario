@@ -108,7 +108,7 @@ void TileTerrainDisplay(TileMap tileMapIndexes, ALLEGRO_BITMAP* dest, const Rect
 		auto endRow = DIV_TILE_HEIGHT(viewWin.y + viewWin.h - 1);
 		dpyX = MOD_TILE_WIDTH(viewWin.x);
 		dpyY = MOD_TILE_WIDTH(viewWin.y);
-		dpyChanged = false;
+		// dpyChanged = false;
 		dpyBuffer = al_create_bitmap(((endCol - startCol)+1) * 16, ((endRow - startRow) + 1)* 16);
 		for (Dim row = startRow; row <= endRow; ++row)
 			for (Dim col = startCol; col <= endCol; ++col)
