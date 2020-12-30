@@ -7,6 +7,10 @@
 #include <string>
 #include <sstream>
 
+//our header files
+#include "Rect.h"
+#include "Point.h"
+#include "ViewWindow.h"
 
 #define TILE_WIDTH	16
 #define TILE_HEIGHT 16

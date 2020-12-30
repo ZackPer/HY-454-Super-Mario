@@ -9,22 +9,6 @@
 
 #include "Types.h"
 
-struct Rect { 
-	int x, y, w, h; 
-	Rect(int x, int y, int w, int h) {
-		this->x = x;
-		this->y = y;
-		this->w = w;
-		this->h = h;
-	}
-};
-struct Point { 
-	int x, y; 
-	Point(int x, int y) {
-		this->x = x;
-		this->y = y;
-	}
-};
 enum BitDepth { bits8 = 1, bits16, bits24, bits32 };
 
 #define ROW_MASK 0x0F
@@ -66,6 +50,8 @@ Index MakeIndex2(byte row, byte col)
 }
 
 #define TILE_SCALE 2
+
+
 void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* destinationBitmap, Point destPoint) {
 	al_set_target_bitmap(destinationBitmap); //dbitmap
 	al_draw_bitmap_region(
@@ -79,6 +65,7 @@ void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* d
 		0				//flags
 	);
 }
+
 
 void PutTile(ALLEGRO_BITMAP* dest, Dim x, Dim y, ALLEGRO_BITMAP* tiles, Index tile) {
 	Rect sourceRect = { TileX3(tile), TileY3(tile), TILE_WIDTH, TILE_HEIGHT };
@@ -136,19 +123,6 @@ void WriteTextMap(const TileMap, FILE fp) {
 	/// custom write in text format /
 }
 
-struct ViewWindow {
-	ALLEGRO_BITMAP* camera = nullptr;
-	Rect dimensions = Rect(0, 0, 160, 160);
-	Rect displayArea = Rect(0, 0, 0, 0);
-
-	ViewWindow() {}
-
-	ViewWindow(Rect dimensions, Rect displayArea) {
-		this->dimensions = dimensions;
-		this->displayArea = displayArea;
-		this->camera = al_create_bitmap(dimensions.h, dimensions.w);
-	}
-};
 
 int getColFromID(int ID, int TileSetWidth) {
 	return ID % TileSetWidth;

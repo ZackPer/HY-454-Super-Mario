@@ -1,24 +1,14 @@
+#pragma once
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <iostream>
+
 #include "Tiles.h"
 
 #define WIDTH	640
 #define	HEIGHT	480
-
-
-
-void initViewWindow(
-	int dimHeight, int dimWidth, int dimX, int dimY,
-	int dispHeight, int dispWidth, int dispX, int dispY,
-	ViewWindow& win
-){
-	win = ViewWindow(
-		Rect( dimX, dimY, dimHeight, dimWidth),
-		Rect(dispX, dispY, dispHeight, dispWidth)
-	);
-}
 
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
@@ -88,13 +78,8 @@ int main() {
 	getMapIndexes(mapTileIndexes, TileMapIndexes);
 
 	//initializing view window
-	ViewWindow win1;
-	initViewWindow(
-		160, 160, 0, 0,
-		0, 0, 0, 0,
-		win1
-	);
-
+	ViewWindow win1 = ViewWindow(160, 160, 0, 0,
+									0, 0, 0, 0);
 	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
 	CoreLoop(display, mapTileIndexes, win1);
 	
