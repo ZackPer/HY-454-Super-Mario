@@ -23,12 +23,12 @@ public:
 	}
 
 	ViewWindow(
-		int dimHeight, int dimWidth, int dimX, int dimY,
-		int dispHeight, int dispWidth, int dispX, int dispY
+		int dimWidth, int dimHeight, int dimX, int dimY,
+		int dispWidth, int dispHeight, int dispX, int dispY
 	) {
-		this->dimensions = Rect(dimX, dimY, dimHeight, dimWidth);
-		this->displayArea = Rect(dispX, dispY, dispHeight, dispWidth);
-		this->camera = al_create_bitmap(dimensions.h, dimensions.w);
+		this->dimensions = Rect(dimX, dimY, dimWidth, dimHeight);
+		this->displayArea = Rect(dispX, dispY, dispWidth, dispHeight);
+		this->camera = al_create_bitmap(dimensions.w, dimensions.h);
 	}
 
 };

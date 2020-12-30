@@ -79,12 +79,14 @@ Index GetTile(TileMap TileMapIndexes, Dim col, Dim row)
 {
 	return TileMapIndexes[row][col];
 }
+
 ALLEGRO_BITMAP* map = nullptr;
 TileMap TileMapIndexes;
 ALLEGRO_BITMAP* dpyBuffer = nullptr;
 ALLEGRO_BITMAP* tileset = nullptr;
 bool dpyChanged = true;
 Dim dpyX = 0, dpyY = 0;
+
 void TileTerrainDisplay(TileMap tileMapIndexes, ALLEGRO_BITMAP* dest, const Rect& viewWin, const Rect& displayArea) {
 	if (dpyChanged) {
 		auto startCol = DIV_TILE_WIDTH(viewWin.x);
