@@ -1,6 +1,7 @@
 #pragma once
 
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
 #include <stdio.h>
 #include <vector>
 #include <fstream>
@@ -24,9 +25,9 @@ void SetGridTile(GridMap* m, Dim col, Dim row, GridIndex index)
 {
 	(*m)[row][col] = index;
 }
-GridIndex GetGridTile(const GridMap* m, Dim col, Dim row)
+GridIndex GetGridTile(const GridMap m, Dim col, Dim row)
 {
-	return (*m)[row][col];
+	return (m)[row][col];
 }
 
 #define GRID_THIN_AIR_MASK 0x0000 // element is ignored
@@ -56,9 +57,9 @@ void SetGridTileTopSolidOnly(GridMap* m, Dim col, Dim row)
 {
 	SetGridTileFlags(m, row, col, GRID_TOP_SOLID_MASK);
 }
-bool CanPassGridTile(GridMap* m, Dim col, Dim row, GridIndex flags)
+bool CanPassGridTile(GridMap m, Dim col, Dim row, GridIndex flags)
 {
-	return GetGridTile(m, row, col) & flags != 0;
+	return (GetGridTile(m, col, row) == GRID_EMPTY_TILE); // & flags != 0;
 }
 
 std::vector<int> emptyTiles;
@@ -85,6 +86,7 @@ void InitEmptyTiles() {
 	emptyTiles.push_back(47);
 	emptyTiles.push_back(57);
 	emptyTiles.push_back(58);
+	emptyTiles.push_back(59);
 	emptyTiles.push_back(30);
 	emptyTiles.push_back(32);
 	emptyTiles.push_back(34);
@@ -143,12 +145,14 @@ void InitEmptyTiles() {
 	emptyTiles.push_back(220);
 }
 
+std::vector<std::vector<int>>  gridTileStatus;
 
 Index GetTile(TileMap TileMapIndexes, Dim col, Dim row);
 
-bool IsTileIndexAssumedEmpty(int row, int col) {
-	int index = row * 19 + col;
-	
+bool ComputeIsGridIndexEmpty(Index tile) {
+	int row = TileY3(tile)/16;
+	int col = TileX3(tile)/16;
+	int index = (row * 19) + col;
 	for (auto& it : emptyTiles) {
 		if (it == index)
 			return true;
@@ -157,16 +161,139 @@ bool IsTileIndexAssumedEmpty(int row, int col) {
 	return false;
 }
 
-void ComputeTileGridBlocks1(const TileMap* map, GridIndex* grid) {
-	for (auto row = 0; row < (*map).size(); ++row)
-		for (auto col = 0; col < (*map)[0].size(); ++col) {
-			memset(
-				grid,
-				IsTileIndexAssumedEmpty(row, col) ?
-				GRID_EMPTY_TILE :
-				GRID_SOLID_TILE,
-				GRID_ELEMENTS_PER_TILE
+void ComputeTileGridBlocks(const TileMap map) {
+	InitEmptyTiles();
+	for (auto row = 0; row < map.size(); ++row) {
+		std::vector<int> rower;
+		gridTileStatus.push_back(rower);
+		for (auto col = 0; col < map[0].size(); ++col) {
+			gridTileStatus[row].push_back( 
+				ComputeIsGridIndexEmpty(TileMapIndexes[row][col]) ? 
+				GRID_EMPTY_TILE : GRID_SOLID_TILE
 			);
-			grid += GRID_ELEMENTS_PER_TILE;
 		}
+	}
+}
+
+#define epi 3
+void DrawGrid() {
+	for (auto row = 0; row < gridTileStatus.size(); row++) {
+		for (auto col = 0; col < gridTileStatus[0].size(); col++) {
+			float x1 = row * 16 * epi;
+			float y1 = col * 16 * epi;
+			float x2 = ((row * 16) + 16) *epi;
+			float y2 = ((col * 16) + 16) *epi;
+			if (gridTileStatus[row][col] == GRID_SOLID_TILE) {
+				ALLEGRO_COLOR t = al_map_rgb(255, 0, 0);
+				al_draw_rectangle(y1, x1, y2, x2, t, 3);
+			}
+			else {
+				ALLEGRO_COLOR t = al_map_rgb(0, 0, 255);
+				al_draw_rectangle(y1, x1, y2, x2, t, 3);
+			}
+		}
+	}
+}
+
+
+#define MAX_PIXEL_WIDTH MUL_TILE_WIDTH(TileMapIndexes.size())
+#define MAX_PIXEL_HEIGHT MUL_TILE_HEIGHT(TileMapIndexes[0].size())
+#define DIV_GRID_ELEMENT_WIDTH(i) ((i)>>4)
+#define DIV_GRID_ELEMENT_HEIGHT(i) ((i)>>4)
+#define MUL_GRID_ELEMENT_WIDTH(i) ((i)<<4)
+#define MUL_GRID_ELEMENT_HEIGHT(i) ((i)<<4)
+
+
+void FilterGridMotionLeft(GridMap m, Rect& r, int& dx) {
+	auto x1_next = r.x + dx;
+	if (x1_next < 0)
+		dx = -r.x;
+	else {
+		auto newCol = DIV_GRID_ELEMENT_WIDTH(x1_next);
+		auto currCol = DIV_GRID_ELEMENT_WIDTH(r.x);
+		if (newCol != currCol) {
+			assert(newCol + 1 == currCol); // we really move left
+			auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
+			auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
+			for (auto row = startRow; row <= endRow; ++row)
+				if (!CanPassGridTile(m, newCol, row, GRID_RIGHT_SOLID_MASK)) {
+					dx = MUL_GRID_ELEMENT_WIDTH(currCol) - r.x;
+					break;
+				}
+		}
+	}
+}void FilterGridMotionRight(GridMap m, Rect& r, int& dx) {
+	int x2 = r.x + r.w - 1;
+	int x2_next = x2 + dx;
+	int t = MAX_PIXEL_WIDTH;
+	if (x2_next >= t)
+		dx = MAX_PIXEL_WIDTH - x2;
+	else {
+		auto newCol = DIV_GRID_ELEMENT_WIDTH(x2_next);
+		auto currCol = DIV_GRID_ELEMENT_WIDTH(x2);
+		if (newCol != currCol) {
+			assert(newCol - 1 == currCol); // we really move right
+			auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
+			auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
+			for (auto row = startRow; row <= endRow; ++row)
+				if (!CanPassGridTile(m, newCol, row, GRID_LEFT_SOLID_MASK)) {
+					dx = MUL_GRID_ELEMENT_WIDTH(newCol) - (x2 + 1);
+					break;
+				}
+		}
+	}
+}void FilterGridMotionDown(GridMap m, Rect& r, int& dy) {	int y2 = r.y + r.h - 1;
+	int y2_next = y2 + dy;
+	int t = MAX_PIXEL_WIDTH;
+	if (y2_next >= t)
+		dy = MAX_PIXEL_WIDTH - y2;
+	else {
+		auto newRow = DIV_GRID_ELEMENT_HEIGHT(y2_next);
+		auto currRow = DIV_GRID_ELEMENT_HEIGHT(y2);
+		if (newRow != currRow) {
+			assert(newRow - 1 == currRow); // we really move right
+			auto startCol = DIV_GRID_ELEMENT_WIDTH(r.x);
+			auto endCol = DIV_GRID_ELEMENT_WIDTH(r.x + r.w - 1);
+			for (auto col = startCol; col <= endCol; ++col)
+				if (!CanPassGridTile(m, col, newRow, GRID_TOP_SOLID_MASK)) {
+					dy = MUL_GRID_ELEMENT_HEIGHT(newRow) - (y2 + 1);
+					break;
+				}
+		}
+	}}void FilterGridMotionUp(GridMap m, Rect& r, int& dy) {	auto y1_next = r.y + dy;
+	if (y1_next < 0)
+		dy = -r.y;
+	else {
+		auto newRow = DIV_GRID_ELEMENT_HEIGHT(y1_next);
+		auto currRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
+		if (newRow != currRow) {
+			assert(newRow + 1 == currRow); // we really move up
+			auto startCol = DIV_GRID_ELEMENT_WIDTH(r.x);
+			auto endCol = DIV_GRID_ELEMENT_WIDTH(r.x + r.w - 1);
+			for (auto col = startCol; col <= endCol; ++col)
+				if (!CanPassGridTile(m, col, newRow, GRID_BOTTOM_SOLID_MASK)) {
+					dy = MUL_GRID_ELEMENT_HEIGHT(currRow) - r.y;
+					break;
+				}
+		}
+	}}void FilterGridMotion(GridMap m, Rect& r, int& dx, int& dy) {
+	assert(
+		abs(dx) <= GRID_ELEMENT_WIDTH && abs(dy) <= GRID_ELEMENT_HEIGHT
+	);
+	// try horizontal move
+	if (dx < 0)
+		FilterGridMotionLeft(m, r, dx);
+	else
+		if (dx > 0)
+			FilterGridMotionRight(m, r, dx);
+
+	// try vertical move
+	if (dy < 0)
+		FilterGridMotionUp(m, r, dy);
+	else
+		if (dy > 0)
+			FilterGridMotionDown(m, r, dy);
+
+	r.x += dx;
+	r.y += dy;
 }

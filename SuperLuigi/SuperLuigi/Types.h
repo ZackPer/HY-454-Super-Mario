@@ -15,8 +15,8 @@
 #define TILE_WIDTH	16
 #define TILE_HEIGHT 16
 
-#define GRID_ELEMENT_WIDTH 4
-#define GRID_ELEMENT_HEIGHT 4
+#define GRID_ELEMENT_WIDTH 16
+#define GRID_ELEMENT_HEIGHT 16
 
 typedef unsigned short Dim;
 
@@ -25,5 +25,4 @@ typedef std::vector<std::vector<Index>> TileMap;
 typedef unsigned char byte;
 
 using GridIndex = byte;
-typedef std::vector<std::vector<GridIndex>> GridMap ;  //GridMap[GRID_MAX_WIDTH][GRID_MAX_HEIGHT];
-static GridMap grid; // example of a global static grid
+typedef std::vector<std::vector<int>> GridMap ;  //GridMap[GRID_MAX_WIDTH][GRID_MAX_HEIGHT];

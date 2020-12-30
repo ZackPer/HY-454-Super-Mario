@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "Tiles.h"
+#include "Grid.h"
 
 #define WIDTH	720
 #define	HEIGHT	540
@@ -17,7 +18,8 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 
 	int dx = 0 , dy = 0;
-	int zachSteps = 2;
+	int zachSteps = 16;
+	Rect KIVOS = Rect(0,0,16,16);
 	while (1) {
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
@@ -38,13 +40,15 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				dx -= zachSteps;
 			}
 
-			ScrollWithBoundCheck(win1.dimensions, dx, dy);
-
+			//ScrollWithBoundCheck(win1.dimensions, dx, dy);
+			FilterGridMotion(gridTileStatus,KIVOS,dx,dy);
 			dx = dy = 0;
 		}
 		TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(win1.camera, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
+		al_draw_filled_rectangle(KIVOS.x * 3,KIVOS.y * 3,(KIVOS.x + KIVOS.w) * 3,(KIVOS.y + KIVOS.h) * 3,al_map_rgb(0,255,0));
+		DrawGrid();
 		al_flip_display();
 	}
 
@@ -58,6 +62,8 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 int main() {
 	ALLEGRO_DISPLAY *display;
 	TileMapIndexes = getTileMapIDs("CSVMaps/mario1.csv");
+	ComputeTileGridBlocks(TileMapIndexes);
+	
 	int mapColumns, mapRows;
 	mapRows = TileMapIndexes.size();
 	mapColumns = TileMapIndexes[0].size();
@@ -66,9 +72,11 @@ int main() {
 		return -1;
 	display = al_create_display(WIDTH, HEIGHT);
 
+
 	//allegro addons
 	al_install_keyboard();
 	al_init_image_addon();
+	al_init_primitives_addon();
 
 	tileset = al_load_bitmap("Tiles/super_mario_tiles.png");
 	map = al_create_bitmap(mapRows*TILE_HEIGHT, mapColumns*TILE_WIDTH);
