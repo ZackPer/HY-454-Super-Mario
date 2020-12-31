@@ -13,11 +13,10 @@
 
 
 Grid myGrid;
-TileMap TileMapIndexes;
 
 class App {
 protected:
-	Game game;
+	//Game game;
 	//+++
 };
 
