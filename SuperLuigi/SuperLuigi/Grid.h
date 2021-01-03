@@ -42,6 +42,9 @@ extern Tile myTile;
 #define MUL_GRID_ELEMENT_HEIGHT(i) ((i)<<4)
 
 
+Dim TileX3(Index index) { return index >> TILEX_SHIFT; }
+Dim TileY3(Index index) { return index & TILEY_MASK; }
+
 class Grid {
 private:
 	GridIndex GetGridTile(const GridMap m, Dim col, Dim row)
