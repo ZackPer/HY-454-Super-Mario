@@ -42,7 +42,7 @@ byte GetRow(byte index)
 
 Dim TileX3(Index index) { return index >> TILEX_SHIFT; }
 Dim TileY3(Index index) { return index & TILEY_MASK; }
-
+	
 
 Index MakeIndex2(byte row, byte col)
 {
@@ -69,7 +69,7 @@ void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* d
 
 void PutTile(ALLEGRO_BITMAP* dest, Dim x, Dim y, ALLEGRO_BITMAP* tiles, Index tile) {
 	Rect sourceRect = { TileX3(tile), TileY3(tile), TILE_WIDTH, TILE_HEIGHT };
-	Point destPoint = { x, y};
+	Point destPoint = {x, y};
 	BitmapBlit(tiles, sourceRect, dest, destPoint);
 }
 

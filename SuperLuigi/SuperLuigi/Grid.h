@@ -61,6 +61,12 @@ void SetGridTileTopSolidOnly(GridMap* m, Dim col, Dim row)
 #define MUL_GRID_ELEMENT_WIDTH(i) ((i)<<4)
 #define MUL_GRID_ELEMENT_HEIGHT(i) ((i)<<4)
 
+std::vector<int> emptyMarioTiles = {
+	4, 5, 6, 7, 19, 20, 21, 24, 25, 26, 27, 28, 38, 39, 40, 43, 44, 45, 46, 47, 57, 58, 
+	59, 30, 32, 34, 49, 51, 53, 59, 62, 63, 64, 65, 66, 103, 104, 105, 106, 107, 108, 109,
+	122, 123, 128, 129, 131, 143, 144, 147, 149, 160, 161, 162, 163, 164, 165, 167, 168, 169, 170, 179,
+	180, 181, 182, 183, 184, 185, 197, 198, 199, 200, 201, 215, 216, 217, 218, 219, 220 
+};
 
 class Grid {
 private:
@@ -99,85 +105,7 @@ private:
 	}
 
 	void InitEmptyTiles() {
-		emptyTiles.push_back(4);
-		emptyTiles.push_back(5);
-		emptyTiles.push_back(6);
-		emptyTiles.push_back(7);
-		emptyTiles.push_back(19);
-		emptyTiles.push_back(20);
-		emptyTiles.push_back(21);
-		emptyTiles.push_back(24);
-		emptyTiles.push_back(25);
-		emptyTiles.push_back(26);
-		emptyTiles.push_back(27);
-		emptyTiles.push_back(28);
-		emptyTiles.push_back(38);
-		emptyTiles.push_back(39);
-		emptyTiles.push_back(40);
-		emptyTiles.push_back(43);
-		emptyTiles.push_back(44);
-		emptyTiles.push_back(45);
-		emptyTiles.push_back(46);
-		emptyTiles.push_back(47);
-		emptyTiles.push_back(57);
-		emptyTiles.push_back(58);
-		emptyTiles.push_back(59);
-		emptyTiles.push_back(30);
-		emptyTiles.push_back(32);
-		emptyTiles.push_back(34);
-		emptyTiles.push_back(49);
-		emptyTiles.push_back(51);
-		emptyTiles.push_back(53);
-		emptyTiles.push_back(59);
-		emptyTiles.push_back(62);
-		emptyTiles.push_back(63);
-		emptyTiles.push_back(64);
-		emptyTiles.push_back(65);
-		emptyTiles.push_back(66);
-		emptyTiles.push_back(103);
-		emptyTiles.push_back(104);
-		emptyTiles.push_back(105);
-		emptyTiles.push_back(106);
-		emptyTiles.push_back(107);
-		emptyTiles.push_back(108);
-		emptyTiles.push_back(109);
-		emptyTiles.push_back(122);
-		emptyTiles.push_back(123);
-		emptyTiles.push_back(128);
-		emptyTiles.push_back(129);
-		emptyTiles.push_back(131);
-		emptyTiles.push_back(143);
-		emptyTiles.push_back(144);
-		emptyTiles.push_back(147);
-		emptyTiles.push_back(149);
-		emptyTiles.push_back(160);
-		emptyTiles.push_back(161);
-		emptyTiles.push_back(162);
-		emptyTiles.push_back(163);
-		emptyTiles.push_back(164);
-		emptyTiles.push_back(165);
-		emptyTiles.push_back(167);
-		emptyTiles.push_back(168);
-		emptyTiles.push_back(169);
-		emptyTiles.push_back(170);
-		emptyTiles.push_back(179);
-		emptyTiles.push_back(180);
-		emptyTiles.push_back(181);
-		emptyTiles.push_back(182);
-		emptyTiles.push_back(183);
-		emptyTiles.push_back(184);
-		emptyTiles.push_back(185);
-		emptyTiles.push_back(197);
-		emptyTiles.push_back(198);
-		emptyTiles.push_back(199);
-		emptyTiles.push_back(200);
-		emptyTiles.push_back(201);
-		emptyTiles.push_back(215);
-		emptyTiles.push_back(216);
-		emptyTiles.push_back(217);
-		emptyTiles.push_back(218);
-		emptyTiles.push_back(219);
-		emptyTiles.push_back(220);
+		this->emptyTiles = emptyMarioTiles;
 	}
 
 	void FilterGridMotionRight(GridMap m, Rect& r, int& dx) {
@@ -267,7 +195,7 @@ private:
 
 public:
 	std::vector<int> emptyTiles;
-	std::vector<std::vector<int>>  gridTileStatus;
+	GridMap  gridTileStatus;
 
 	Grid() {
 		InitEmptyTiles();
@@ -276,6 +204,17 @@ public:
 	Grid(TileMap tileMap) {
 		InitEmptyTiles();
 		ComputeTileGridBlocks(tileMap);
+	}
+
+	//for gravity TODO later
+	bool IsOnSolidGround(GridMap m, Rect& r) {
+		int dy = 1; // down 1 pixel
+		FilterGridMotionDown( m, r, dy);
+		return dy == 0; // if true IS attached to solid ground
+	}
+
+	GridMap GetBuffer() {
+		return gridTileStatus;
 	}
 
 	void FilterGridMotion(GridMap m, Rect& r, int& dx, int& dy) {
