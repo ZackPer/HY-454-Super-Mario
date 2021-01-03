@@ -7,22 +7,42 @@
 
 #include "Tiles.h"
 #include "Grid.h"
-
+#include "Game.h"
 #define WIDTH	720
 #define	HEIGHT	540
 
 
 Grid myGrid;
+Tile myTile;
 
-class App {
-protected:
-	//Game game;
-	//+++
-};
+namespace mario {
+	class App {
+	public:
+		App() {
 
-class Game {
-	//++
-};
+		}
+		
+		void Initialize() {			
+			Allegro_Initilization();
+		}
+	protected:
+		Game game;
+		//+++
+	private:
+		ALLEGRO_DISPLAY* display;
+
+		void Allegro_Initilization() {
+			if (!al_init())
+				std::cout << "There was an error in Allegro initialization.." << std::endl;
+			display = al_create_display(WIDTH, HEIGHT);
+			al_install_keyboard();
+			al_init_image_addon();
+			al_init_primitives_addon();
+		}
+	};
+}
+
+
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
@@ -73,12 +93,13 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-	TileMapIndexes = getTileMapIDs("CSVMaps/mario1.csv");
-	myGrid = Grid(TileMapIndexes);
+
+	myTile = Tile("CSVMaps/mario1.csv");
+	myGrid = Grid(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
-	mapRows = TileMapIndexes.size();
-	mapColumns = TileMapIndexes[0].size();
+	mapRows = myTile.TileMapIndexes.size();
+	mapColumns = myTile.TileMapIndexes[0].size();
 
 	if(!al_init())
 		return -1;
@@ -95,8 +116,8 @@ int main() {
 
 	//mapping map indexes to tilesetIndexes
 	TileMap mapTileIndexes;
-	getMapIndexes(mapTileIndexes, TileMapIndexes);
-
+	getMapIndexes(mapTileIndexes, myTile.TileMapIndexes);
+	
 	//initializing view window
 	ViewWindow win1 = ViewWindow(WIDTH/3, HEIGHT/3, 0, 0,
 									0, 0, 0, 0);

@@ -81,7 +81,7 @@ Index GetTile(TileMap TileMapIndexes, Dim col, Dim row)
 }
 
 ALLEGRO_BITMAP* map = nullptr;
-TileMap TileMapIndexes;
+TileMap TileMapIndexes;	
 ALLEGRO_BITMAP* dpyBuffer = nullptr;
 ALLEGRO_BITMAP* tileset = nullptr;
 bool dpyChanged = true;
@@ -222,3 +222,56 @@ void ScrollWithBoundCheck(
 	//we might change the dpychanged var for cahcing
 	dpyChanged = true;
 }
+
+
+class Tile {
+public:
+	Tile() {
+
+	}
+
+	Tile(std::string filename) {
+		this->TileMapIndexes = this->getTileMapIDs(filename);
+	}
+
+	TileMap getTileMapIDs(std::string filename) {
+		std::string line;
+		std::vector<std::vector<int>> TileIDs;
+		TileMap tileIndexes;
+		std::ifstream input(filename);
+		int id;
+		if (input.is_open())
+			while (std::getline(input, line)) {
+				std::vector<int> row;
+				std::stringstream input_stringstream(line);
+				while (getline(input_stringstream, line, ',')) {
+					row.push_back(std::stoi(line));
+				}
+				TileIDs.push_back(row);
+			}
+		for (int i = 0; i < TileIDs.size(); i++) {
+			std::vector<Index> a;
+			tileIndexes.push_back(a);
+			for (int j = 0; j < TileIDs[i].size(); j++) {
+				tileIndexes[i].push_back(MakeIndex2(getRowFromID(TileIDs[i][j], 19), getColFromID(TileIDs[i][j], 19)));
+			}
+		}
+		return tileIndexes;
+	}
+
+	TileMap TileMapIndexes;
+private:
+	Index MakeIndex2(byte row, byte col)
+	{
+		return (MUL_TILE_WIDTH(col) << TILEX_SHIFT) | MUL_TILE_HEIGHT(row);
+	}
+
+	int getColFromID(int ID, int TileSetWidth) {
+		return ID % TileSetWidth;
+	}
+
+	int getRowFromID(int ID, int TileSetWidth) {
+		return ID / TileSetWidth;
+	}
+
+};

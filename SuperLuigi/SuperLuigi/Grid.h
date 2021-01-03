@@ -10,22 +10,19 @@
 
 #include "Types.h"
 
+extern Tile myTile;
+
 #if TILE_WIDTH % GRID_ELEMENT_WIDTH != 0
 #error "TILE_WIDTH % GRID_ELEMENT_WIDTH must be zero!"
 #endif
 #if TILE_HEIGHT % GRID_ELEMENT_HEIGHT != 0
 #error "TILE_HEIGHT % GRID_ELEMENT_HEIGHT must be zero!"
 #endif
-
+//==============================================================================
 #define GRID_BLOCK_COLUMNS (TILE_WIDTH / GRID_ELEMENT_WIDTH)
 #define GRID_BLOCK_ROWS (TILE_HEIGHT / GRID_ELEMENT_HEIGHT)
 #define GRID_ELEMENTS_PER_TILE (GRID_BLOCK_ROWS * GRID_BLOCK_COLUMNS)
-
-void SetGridTile(GridMap* m, Dim col, Dim row, GridIndex index)
-{
-	(*m)[row][col] = index;
-}
-
+//==============================================================================
 #define GRID_THIN_AIR_MASK 0x0000 // element is ignored
 #define GRID_LEFT_SOLID_MASK 0x0001 // bit 0
 #define GRID_RIGHT_SOLID_MASK 0x0002 // bit 1
@@ -36,26 +33,9 @@ void SetGridTile(GridMap* m, Dim col, Dim row, GridIndex index)
 #define GRID_EMPTY_TILE GRID_THIN_AIR_MASK
 #define GRID_SOLID_TILE \
 (GRID_LEFT_SOLID_MASK | GRID_RIGHT_SOLID_MASK | GRID_TOP_SOLID_MASK | GRID_BOTTOM_SOLID_MASK)
-
-void SetSolidGridTile(GridMap* m, Dim col, Dim row)
-{
-	SetGridTile(m, col, row, GRID_SOLID_TILE);
-}
-void SetEmptyGridTile(GridMap* m, Dim col, Dim row)
-{
-	SetGridTile(m, col, row, GRID_EMPTY_TILE);
-}
-void SetGridTileFlags(GridMap* m, Dim col, Dim row, GridIndex flags)
-{
-	SetGridTile(m, col, row, flags);
-}
-void SetGridTileTopSolidOnly(GridMap* m, Dim col, Dim row)
-{
-	SetGridTileFlags(m, row, col, GRID_TOP_SOLID_MASK);
-}
-
-#define MAX_PIXEL_WIDTH MUL_TILE_WIDTH(TileMapIndexes.size())
-#define MAX_PIXEL_HEIGHT MUL_TILE_HEIGHT(TileMapIndexes[0].size())
+//==============================================================================
+#define MAX_PIXEL_WIDTH MUL_TILE_WIDTH(myTile.TileMapIndexes.size())
+#define MAX_PIXEL_HEIGHT MUL_TILE_HEIGHT(myTile.TileMapIndexes[0].size())
 #define DIV_GRID_ELEMENT_WIDTH(i) ((i)>>4)
 #define DIV_GRID_ELEMENT_HEIGHT(i) ((i)>>4)
 #define MUL_GRID_ELEMENT_WIDTH(i) ((i)<<4)
@@ -97,7 +77,7 @@ private:
 			gridTileStatus.push_back(rower);
 			for (auto col = 0; col < map[0].size(); ++col) {
 				gridTileStatus[row].push_back(
-					ComputeIsGridIndexEmpty(TileMapIndexes[row][col]) ?
+					ComputeIsGridIndexEmpty(myTile.TileMapIndexes[row][col]) ?
 					GRID_EMPTY_TILE : GRID_SOLID_TILE
 				);
 			}
