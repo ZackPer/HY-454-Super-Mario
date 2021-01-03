@@ -10,7 +10,7 @@
 
 #include "Types.h"
 
-extern Tile myTile;
+extern TileLayer myTile;
 
 #if TILE_WIDTH % GRID_ELEMENT_WIDTH != 0
 #error "TILE_WIDTH % GRID_ELEMENT_WIDTH must be zero!"
@@ -51,7 +51,7 @@ std::vector<int> emptyMarioTiles = {
 Dim TileX3(Index index) { return index >> TILEX_SHIFT; }
 Dim TileY3(Index index) { return index & TILEY_MASK; }
 
-class Grid {
+class GridLayer {
 private:
 	GridIndex GetGridTile(const GridMap m, Dim col, Dim row)
 	{
@@ -180,11 +180,11 @@ public:
 	std::vector<int> emptyTiles;
 	GridMap  gridTileStatus;
 
-	Grid() {
+	GridLayer() {
 		InitEmptyTiles();
 	}
 
-	Grid(TileMap tileMap) {
+	GridLayer(TileMap tileMap) {
 		InitEmptyTiles();
 		ComputeTileGridBlocks(tileMap);
 	}

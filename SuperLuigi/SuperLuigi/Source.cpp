@@ -12,8 +12,8 @@
 #define	HEIGHT	540
 
 
-Grid myGrid;
-Tile myTile;
+GridLayer myGrid;
+TileLayer myTile;
 
 namespace mario {
 	class App {
@@ -41,8 +41,6 @@ namespace mario {
 		}
 	};
 }
-
-
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
@@ -72,15 +70,16 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				dx -= zachSteps;
 			}
 			
-			myTile.ScrollWithBoundCheck(win1.dimensions, dx, dy, myTile.TileMapIndexes);
-			//myGrid.FilterGridMotion(myGrid.gridTileStatus,KIVOS,dx,dy);
+			//myTile.ScrollWithBoundCheck(win1.dimensions, dx, dy, myTile.TileMapIndexes);
+
+			myGrid.FilterGridMotion(myGrid.gridTileStatus,KIVOS,dx,dy);
 			dx = dy = 0;
 		}
 		myTile.TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(win1.camera, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
-		//al_draw_filled_rectangle(KIVOS.x * 3,KIVOS.y * 3,(KIVOS.x + KIVOS.w) * 3,(KIVOS.y + KIVOS.h) * 3,al_map_rgb(0,255,0));
-		//myGrid.DrawGrid(3);
+		al_draw_filled_rectangle(KIVOS.x * 3,KIVOS.y * 3,(KIVOS.x + KIVOS.w) * 3,(KIVOS.y + KIVOS.h) * 3,al_map_rgb(0,255,0));
+		myGrid.DrawGrid(3);
 		al_flip_display();
 	}
 
@@ -94,8 +93,8 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 int main() {
 	ALLEGRO_DISPLAY *display;
 
-	myTile = Tile("CSVMaps/mario1.csv");
-	myGrid = Grid(myTile.TileMapIndexes);
+	myTile = TileLayer("CSVMaps/mario1.csv");
+	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
 	mapRows = myTile.TileMapIndexes.size();

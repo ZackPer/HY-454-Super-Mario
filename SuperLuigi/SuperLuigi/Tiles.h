@@ -22,7 +22,7 @@ enum BitDepth { bits8 = 1, bits16, bits24, bits32 };
 #define TILEX_SHIFT 8
 #define TILEY_MASK 0x00FF
 
-class Tile {
+class TileLayer {
 public:
 	TileMap TileMapIndexes;
 	ALLEGRO_BITMAP* TileLayerBitmap;
@@ -32,12 +32,12 @@ public:
 	Dim dpyX = 0, dpyY = 0;
 
 
-	Tile() {
+	TileLayer() {
 		TileLayerBitmap = nullptr;
 		tileset = nullptr;
 	}
 
-	Tile(std::string filename) {
+	TileLayer(std::string filename) {
 		this->TileMapIndexes = this->getTileMapIDs(filename);
 		TileLayerBitmap = nullptr;
 		tileset = nullptr;
