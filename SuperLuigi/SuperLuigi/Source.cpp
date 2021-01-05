@@ -50,6 +50,12 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 	int dx = 0 , dy = 0;
 	int zachSteps = 16;
 	Rect KIVOS = Rect(0,0,16,16);
+	int displayXKIVOS = 0, displayYKIVOS = 0;
+	TileLayer a =  TileLayer("CSVMaps/mario1.csv");
+	a.tileset = al_load_bitmap("Tiles/super_mario_tiles.png");
+	a.TileLayerBitmap = al_create_bitmap(TILE_HEIGHT, TILE_WIDTH);
+	a.PutTile(a.TileLayerBitmap, 0, 0, a.tileset, 0);
+
 	while (1) {
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
@@ -58,28 +64,36 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				break;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				
 				dy += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
+
 				dy -= zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				
 				dx += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				
 				dx -= zachSteps;
 			}
-			
-			//myTile.ScrollWithBoundCheck(win1.dimensions, dx, dy, myTile.TileMapIndexes);
 
-			myGrid.FilterGridMotion(myGrid.gridTileStatus,KIVOS,dx,dy);
+			myGrid.FilterGridMotion(myGrid.gridTileStatus,KIVOS, dx, dy);;
+			myTile.ScrollWithBoundCheck(win1.dimensions, dx, dy, myTile.TileMapIndexes);
+
+			displayXKIVOS = KIVOS.x - win1.dimensions.x;
+			displayYKIVOS = KIVOS.y - win1.dimensions.y;				
+
 			dx = dy = 0;
 		}
 		myTile.TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(win1.camera, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
-		al_draw_filled_rectangle(KIVOS.x * 3,KIVOS.y * 3,(KIVOS.x + KIVOS.w) * 3,(KIVOS.y + KIVOS.h) * 3,al_map_rgb(0,255,0));
+		al_draw_scaled_bitmap(a.TileLayerBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, displayXKIVOS *3, displayYKIVOS *3, WIDTH, HEIGHT, 0);
 		myGrid.DrawGrid(3);
+		
 		al_flip_display();
 	}
 

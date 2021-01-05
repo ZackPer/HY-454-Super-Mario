@@ -34,8 +34,8 @@ extern TileLayer myTile;
 #define GRID_SOLID_TILE \
 (GRID_LEFT_SOLID_MASK | GRID_RIGHT_SOLID_MASK | GRID_TOP_SOLID_MASK | GRID_BOTTOM_SOLID_MASK)
 //==============================================================================
-#define MAX_PIXEL_WIDTH MUL_TILE_WIDTH(myTile.TileMapIndexes.size())
-#define MAX_PIXEL_HEIGHT MUL_TILE_HEIGHT(myTile.TileMapIndexes[0].size())
+#define MAX_PIXEL_WIDTH MUL_TILE_WIDTH(myTile.TileMapIndexes[0].size())
+#define MAX_PIXEL_HEIGHT MUL_TILE_HEIGHT(myTile.TileMapIndexes.size())
 #define DIV_GRID_ELEMENT_WIDTH(i) ((i)>>4)
 #define DIV_GRID_ELEMENT_HEIGHT(i) ((i)>>4)
 #define MUL_GRID_ELEMENT_WIDTH(i) ((i)<<4)
@@ -47,9 +47,6 @@ std::vector<int> emptyMarioTiles = {
 	122, 123, 128, 129, 131, 143, 144, 147, 149, 160, 161, 162, 163, 164, 165, 167, 168, 169, 170, 179,
 	180, 181, 182, 183, 184, 185, 197, 198, 199, 200, 201, 215, 216, 217, 218, 219, 220 
 };
-
-Dim TileX3(Index index) { return index >> TILEX_SHIFT; }
-Dim TileY3(Index index) { return index & TILEY_MASK; }
 
 class GridLayer {
 private:
@@ -100,12 +97,13 @@ private:
 		else {
 			auto newCol = DIV_GRID_ELEMENT_WIDTH(x2_next);
 			auto currCol = DIV_GRID_ELEMENT_WIDTH(x2);
+			
 			if (newCol != currCol) {
 				assert(newCol - 1 == currCol); // we really move right
 				auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
 				auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
 				for (auto row = startRow; row <= endRow; ++row)
-					if (!CanPassGridTile(m, newCol, row, GRID_LEFT_SOLID_MASK)) {
+					if (!CanPassGridTile(m, newCol, row, GRID_LEFT_SOLID_MASK)) {		
 						dx = MUL_GRID_ELEMENT_WIDTH(newCol) - (x2 + 1);
 						break;
 					}
@@ -217,7 +215,6 @@ public:
 		else
 			if (dy > 0)
 				FilterGridMotionDown(m, r, dy);
-
 		r.x += dx;
 		r.y += dy;
 	}
