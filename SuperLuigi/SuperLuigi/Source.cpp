@@ -89,12 +89,11 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 			dx = dy = 0;
 		}
 		myTile.TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
+		al_flip_display();
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(win1.camera, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
 		al_draw_scaled_bitmap(a.TileLayerBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, displayXKIVOS *3, displayYKIVOS *3, WIDTH, HEIGHT, 0);
 		myGrid.DrawGrid(3);
-		
-		al_flip_display();
 	}
 
 	//destroyAllegroComponents --> make that a delegate
