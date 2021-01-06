@@ -44,6 +44,7 @@ namespace mario {
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
+	ALLEGRO_EVENT ev;// only allocates memory - does not initialize contents
 	event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 
@@ -57,14 +58,18 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 	a.PutTile(a.TileLayerBitmap, 0, 0, a.tileset, 0);
 
 	while (1) {
-		ALLEGRO_EVENT ev;
-		al_wait_for_event(event_queue, &ev);
-		if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+		bool received_event = false;
+		received_event = al_get_next_event(event_queue, &ev);
+
+		if (!received_event) {	
+			
+		}
+		else {	
 			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				break;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-				
+
 				dy += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
@@ -72,22 +77,24 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				dy -= zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-				
+
 				dx += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-				
+
 				dx -= zachSteps;
 			}
 
-			myGrid.FilterGridMotion(myGrid.gridTileStatus,KIVOS, dx, dy);;
+			myGrid.FilterGridMotion(myGrid.gridTileStatus, KIVOS, dx, dy);;
 			myTile.ScrollWithBoundCheck(win1.dimensions, dx, dy, myTile.TileMapIndexes);
 
 			displayXKIVOS = KIVOS.x - win1.dimensions.x;
-			displayYKIVOS = KIVOS.y - win1.dimensions.y;				
+			displayYKIVOS = KIVOS.y - win1.dimensions.y;
 
 			dx = dy = 0;
 		}
+		al_flush_event_queue(event_queue);
+		
 		myTile.TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_flip_display();
 		al_set_target_bitmap(al_get_backbuffer(display));
