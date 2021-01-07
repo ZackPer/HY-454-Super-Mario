@@ -8,13 +8,13 @@
 #include "Tiles.h"
 #include "Grid.h"
 #include "Game.h"
+#include "SystemClock.h"
 #define WIDTH	720
 #define	HEIGHT	540
 
 AnimationFilm littleshit;
 GridLayer myGrid;
 TileLayer myTile;
-
 
 namespace mario {
 	class App {
@@ -42,21 +42,25 @@ namespace mario {
 		}
 	};
 }
-
+TileLayer a;
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
 	ALLEGRO_EVENT ev;// only allocates memory - does not initialize contents
 	event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 
-	int dx = 0 , dy = 0, i = 0, displayXKIVOS = 0, displayYKIVOS = 0;
+	int dx = 0 , dy = 0, i = 0, j = 0, displayXKIVOS = 0, displayYKIVOS = 0;
 	int zachSteps = 4;
 	Rect KIVOS = Rect(0,0,16,16);
-	TileLayer a =  TileLayer("CSVMaps/mario1.csv");
+	a =  TileLayer("CSVMaps/mario1.csv");
 	a.tileset = al_load_bitmap("Tiles/super_mario_tiles.png");
 	a.TileLayerBitmap = al_create_bitmap(TILE_HEIGHT, TILE_WIDTH);
 	AnimationFilmHolder FilmHolder = InitAnimationFilmHolder();
 
+	MovingAnimation* test = new MovingAnimation("littlemario.walk.right",4,0,0,50);
+	MovingAnimator* kounaw = new MovingAnimator();
+	AnimatorManager::GetSingleton().Register(kounaw);
+	kounaw->Start(test, SystemClock::Get().micro_secs());
 	while (1) {
 		bool received_event = false;
 		received_event = al_get_next_event(event_queue, &ev);
@@ -68,9 +72,6 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				break;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-				FilmHolder.GetFilm("littlemario.walk.right")->DisplayFrame(a.TileLayerBitmap, Point(0, 0), i);
-				i++;
-				i = i % 4;
 				dy += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
@@ -82,7 +83,9 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				dx += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-
+				FilmHolder.GetFilm("littlemario.walk.left")->DisplayFrame(a.TileLayerBitmap, Point(0, 0), j);
+				j++;
+				j = j % 4;
 				dx -= zachSteps;
 			}
 
@@ -98,6 +101,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 		
 		myTile.TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
 		al_flip_display();
+		AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(win1.camera, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
 		al_draw_scaled_bitmap(a.TileLayerBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, displayXKIVOS *3, displayYKIVOS *3, WIDTH, HEIGHT, 0);
