@@ -8,6 +8,8 @@
 #include <sstream>
 
 #include "Types.h"
+#include "AllegroUtil.h"
+
 
 enum BitDepth { bits8 = 1, bits16, bits24, bits32 };
 
@@ -22,19 +24,6 @@ enum BitDepth { bits8 = 1, bits16, bits24, bits32 };
 #define TILEX_SHIFT 8
 #define TILEY_MASK 0x00FF
 
-void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* destinationBitmap, Point destPoint) {
-	al_set_target_bitmap(destinationBitmap); //dbitmap
-	al_draw_bitmap_region(
-		sourceBitmap,	//sbitmap
-		sourceRect.x,	//sx
-		sourceRect.y,	//sy
-		sourceRect.w,	//sw
-		sourceRect.h,	//sh
-		destPoint.x,	//dx
-		destPoint.y,	//dy
-		0				//flags
-	);
-}
 
 Dim TileX3(Index index) { return index >> TILEX_SHIFT; }
 Dim TileY3(Index index) { return index & TILEY_MASK; }
