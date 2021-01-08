@@ -5,10 +5,13 @@
 #include <allegro5/allegro_image.h>
 #include <iostream>
 #include "AnimationFilm.h"
+#include "Animations.h"
+#include "Animators.h"
 #include "Tiles.h"
 #include "Grid.h"
 #include "Game.h"
 #include "SystemClock.h"
+
 #define WIDTH	720
 #define	HEIGHT	540
 
@@ -42,6 +45,7 @@ namespace mario {
 		}
 	};
 }
+
 TileLayer a;
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
@@ -55,11 +59,10 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 	a =  TileLayer("CSVMaps/mario1.csv");
 	a.tileset = al_load_bitmap("Tiles/super_mario_tiles.png");
 	a.TileLayerBitmap = al_create_bitmap(TILE_HEIGHT, TILE_WIDTH);
-	AnimationFilmHolder FilmHolder = InitAnimationFilmHolder();
+	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
 
-	MovingAnimation* test = new MovingAnimation("littlemario.walk.right",4,0,0,50);
+	MovingAnimation* test = new MovingAnimation("littlemario.walk.right", 0, 0, 0, 100000);
 	MovingAnimator* kounaw = new MovingAnimator();
-	AnimatorManager::GetSingleton().Register(kounaw);
 	kounaw->Start(test, SystemClock::Get().micro_secs());
 	while (1) {
 		bool received_event = false;
@@ -72,6 +75,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				break;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				AnimationFilmHolder::Get().GetFilm("littlemario.walk.left")->DisplayFrame(a.TileLayerBitmap, Point(0, 0), j);
 				dy += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
@@ -79,13 +83,11 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				dy -= zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-
 				dx += zachSteps;
 			}
 			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-				FilmHolder.GetFilm("littlemario.walk.left")->DisplayFrame(a.TileLayerBitmap, Point(0, 0), j);
-				j++;
-				j = j % 4;
+				//j++;
+				//j = j % 4;
 				dx -= zachSteps;
 			}
 
