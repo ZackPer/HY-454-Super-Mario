@@ -15,4 +15,14 @@ public:
 		this->w = w;
 		this->h = h;
 	}
+
+	bool operator==(const Rect b) const {
+		return (
+			this->x == b.x &&
+			this->y == b.y &&
+			this->w == b.w &&
+			this->h == b.h
+		);
+	}
 };
+

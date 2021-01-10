@@ -35,6 +35,7 @@ public:
 	ALLEGRO_BITMAP* TileLayerBitmap;
 	ALLEGRO_BITMAP* tileset;
 	ALLEGRO_BITMAP* dpyBuffer = nullptr;
+	ViewWindow viewWin;
 	bool dpyChanged = true;
 	Dim dpyX = 0, dpyY = 0;
 
@@ -139,8 +140,12 @@ public:
 			dest,
 			{ displayArea.x, displayArea.y }
 		);
-
 	}
+
+	Rect GetViewWindow() {
+		return viewWin.dimensions;
+	}
+
 private:
 	Index MakeIndex2(byte row, byte col)
 	{

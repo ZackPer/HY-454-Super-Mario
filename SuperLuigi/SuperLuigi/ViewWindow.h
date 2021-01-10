@@ -6,12 +6,12 @@
 
 class ViewWindow {
 public:
-	ALLEGRO_BITMAP* camera;
+	ALLEGRO_BITMAP* bitmap;
 	Rect dimensions;
 	Rect displayArea;
 
 	ViewWindow() {
-		camera = nullptr;
+		bitmap = nullptr;
 		dimensions = Rect(0, 0, 0, 0);
 		displayArea = Rect(0, 0, 0, 0);
 	}
@@ -19,7 +19,7 @@ public:
 	ViewWindow(Rect dimensions, Rect displayArea) {
 		this->dimensions = dimensions;
 		this->displayArea = displayArea;
-		this->camera = al_create_bitmap(dimensions.h, dimensions.w);
+		this->bitmap = al_create_bitmap(dimensions.h, dimensions.w);
 	}
 
 	ViewWindow(
@@ -28,7 +28,7 @@ public:
 	) {
 		this->dimensions = Rect(dimX, dimY, dimWidth, dimHeight);
 		this->displayArea = Rect(dispX, dispY, dispWidth, dispHeight);
-		this->camera = al_create_bitmap(dimensions.w, dimensions.h);
+		this->bitmap = al_create_bitmap(dimensions.w, dimensions.h);
 	}
 
 };

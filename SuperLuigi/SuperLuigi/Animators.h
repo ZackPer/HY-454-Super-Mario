@@ -65,7 +65,7 @@ protected:
 public:
 	void Progress(timestamp_t currTime) {
 		while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
-			lastTime += anim->GetDelay();
+			lastTime += anim->GetDelay(); //nice
 			NotifyAction(*anim);
 
 			//Todo: Create Sprite class and get frame number from sprite. 

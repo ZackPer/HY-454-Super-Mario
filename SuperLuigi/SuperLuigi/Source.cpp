@@ -11,13 +11,25 @@
 #include "Grid.h"
 #include "Game.h"
 #include "SystemClock.h"
+#include "Sprite.h"
+#include "Clipper.h"
 
 #define WIDTH	720
 #define	HEIGHT	540
 
+const Clipper MakeTileLayerClipper(TileLayer* layer) {
+	return Clipper().SetView(
+		[layer](void)
+	{ return layer->GetViewWindow(); }
+	);
+}
+
 AnimationFilm littleshit;
 GridLayer myGrid;
 TileLayer myTile;
+
+Sprite marioSprite;
+Clipper clipper;
 
 namespace mario {
 	class App {
@@ -47,7 +59,7 @@ namespace mario {
 }
 
 TileLayer a;
-void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1) {
+void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
 	ALLEGRO_EVENT ev;// only allocates memory - does not initialize contents
 	event_queue = al_create_event_queue();
@@ -59,7 +71,6 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 	a =  TileLayer("CSVMaps/mario1.csv");
 	a.tileset = al_load_bitmap("Tiles/super_mario_tiles.png");
 	a.TileLayerBitmap = al_create_bitmap(TILE_HEIGHT, TILE_WIDTH);
-	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
 
 	MovingAnimation* test = new MovingAnimation("littlemario.walk.right", 0, 0, 0, 100000);
 	MovingAnimator* kounaw = new MovingAnimator();
@@ -91,22 +102,28 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 				dx -= zachSteps;
 			}
 
-			myGrid.FilterGridMotion(myGrid.gridTileStatus, KIVOS, dx, dy);;
-			myTile.ScrollWithBoundCheck(win1.dimensions, dx, dy, myTile.TileMapIndexes);
+			//myGrid.FilterGridMotion(myGrid.gridTileStatus, KIVOS, dx, dy);;
+			//myTile.ScrollWithBoundCheck(myTile.viewWin.dimensions, dx, dy, myTile.TileMapIndexes);
+			marioSprite.Move(dx, dy);
 
-			displayXKIVOS = KIVOS.x - win1.dimensions.x;
-			displayYKIVOS = KIVOS.y - win1.dimensions.y;
+			displayXKIVOS = KIVOS.x - myTile.viewWin.dimensions.x;
+			displayYKIVOS = KIVOS.y - myTile.viewWin.dimensions.y;
 
 			dx = dy = 0;
 		}
 		al_flush_event_queue(event_queue);
 		
-		myTile.TileTerrainDisplay(mapTileIndexes, win1.camera, win1.dimensions, win1.displayArea);
+
+		myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
 		al_flip_display();
+		
 		AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 		al_set_target_bitmap(al_get_backbuffer(display));
-		al_draw_scaled_bitmap(win1.camera, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
-		al_draw_scaled_bitmap(a.TileLayerBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, displayXKIVOS *3, displayYKIVOS *3, WIDTH, HEIGHT, 0);
+		al_draw_scaled_bitmap(myTile.viewWin.bitmap, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
+		marioSprite.Display(al_get_backbuffer(display), myTile.viewWin.dimensions, clipper);
+
+		//Looping mario animation.
+		//al_draw_scaled_bitmap(a.TileLayerBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, displayXKIVOS *3, displayYKIVOS *3, WIDTH, HEIGHT, 0);
 	}
 
 	//destroyAllegroComponents --> make that a delegate
@@ -114,7 +131,6 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, ViewWindow win1)
 		al_destroy_event_queue(event_queue);
 	};
 }
-
 
 int main() {
 	ALLEGRO_DISPLAY *display;
@@ -140,13 +156,25 @@ int main() {
 
 	//mapping map indexes to tilesetIndexes
 	TileMap mapTileIndexes;
-	
 	myTile.getMapIndexes(mapTileIndexes,myTile.TileMapIndexes);
+
 	//initializing view window
-	ViewWindow win1 = ViewWindow(WIDTH/3, HEIGHT/3, 0, 0,
+	myTile.viewWin = ViewWindow(WIDTH/3, HEIGHT/3, 0, 0,
 									0, 0, 0, 0);
+
+	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
+
+	//Our first Sprite :D
+	marioSprite = Sprite(0, 0, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mpourdes");
+	std::function<void(Rect&, int* dx, int* dy)> gridMover = marioSprite.MakeSpriteGridLayerMover(&myGrid, &marioSprite);
+	marioSprite.SetMover(gridMover);
+	
+	//Clipper
+	clipper = Clipper();
+	clipper = MakeTileLayerClipper(&myTile);
+
 	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
-	CoreLoop(display, mapTileIndexes, win1);
+	CoreLoop(display, mapTileIndexes);
 	
 
 	//destroyAllegroComponents --> make that a delegate

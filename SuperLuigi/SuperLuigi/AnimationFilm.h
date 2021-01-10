@@ -43,9 +43,7 @@ public:
 		return boxes[frameNo];
 	}
 	void DisplayFrame(ALLEGRO_BITMAP* dest, const Point& at, byte frameNo) const {
-		al_set_target_bitmap(dest);
-		al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-		BitmapBlit(bitmap, GetFrameBox(frameNo), dest, at);
+		MaskedBlit(bitmap, GetFrameBox(frameNo), dest, at);
 	}
 	void SetBitmap(ALLEGRO_BITMAP* b){
 		assert(!bitmap); bitmap = b;
@@ -143,7 +141,7 @@ public:
 			delete(i.second);
 		films.clear();
 	}
-	auto GetFilm(const std::string& id) -> const AnimationFilm* const {
+	auto GetFilm(const std::string& id) -> AnimationFilm* const {
 		auto i = films.find(id);
 		return i != films.end() ? i->second : nullptr;
 	}
