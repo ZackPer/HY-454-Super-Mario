@@ -32,7 +32,6 @@ namespace clip_util {
 	}
 }
 
-
 class Clipper {
 public:
 	using View = std::function<const Rect&(void)>;
@@ -61,7 +60,8 @@ public:
 			dpyPos->y = dpyArea.y + (visibleArea.y - view().y);
 			return true;
 		}
-	}
+	}
+
 	Clipper(void) = default;
 	Clipper(const Clipper&) = default;
 };

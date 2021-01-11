@@ -1,5 +1,4 @@
 #pragma once
-
 #include <iostream>
 #include <functional>
 #include "Types.h"
@@ -19,7 +18,7 @@ protected:
 	Mover mover; // filters requested motion too!
 	bool used = false;
 public:
-	MotionQuantizer& SetUsed(bool val) { this->used = used; };
+	MotionQuantizer& SetUsed(bool val) { this->used = val; };
 	MotionQuantizer& SetRange(int h, int v)
 	{
 		horizMax = h, vertMax = v; used = true; return *this;
@@ -52,4 +51,5 @@ public:
 
 	MotionQuantizer(void) = default;
 	MotionQuantizer(const MotionQuantizer&) = default;
-};
+};
+

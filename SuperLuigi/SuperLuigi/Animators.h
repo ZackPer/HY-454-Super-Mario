@@ -4,6 +4,7 @@
 #include "AnimationFilm.h"
 #include <iostream>
 #include <functional>
+#include "Sprite.h"
 
 extern TileLayer a;
 
@@ -18,6 +19,7 @@ public:
 	using OnStart = std::function<void(Animator*)>;
 	using OnAction = std::function<void(Animator*, const Animation&)>;
 protected:
+	Sprite* sprite;
 	timestamp_t lastTime = 0;
 	animatorstate_t state = ANIMATOR_FINISHED;
 	OnFinish onFinish;
@@ -44,6 +46,10 @@ public:
 	Animator(Animator&&) = delete;
 	virtual ~Animator();
 
+	const Sprite& GetSprite() {
+		return *sprite;
+	}
+
 	void Stop(void) {
 		Finish(true);
 	}
@@ -61,21 +67,11 @@ class MovingAnimator : public Animator {
 protected:
 	MovingAnimation* anim = nullptr;
 	unsigned currRep = 0; // animation state
-	int i = 0;
 public:
 	void Progress(timestamp_t currTime) {
 		while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
 			lastTime += anim->GetDelay(); //nice
 			NotifyAction(*anim);
-
-			//Todo: Create Sprite class and get frame number from sprite. 
-			auto film = AnimationFilmHolder::Get().GetFilm(anim->GetId());
-			if (film) {
-				film->DisplayFrame(a.TileLayerBitmap, Point(0, 0), i);
-				i++;
-				i = i % 4;
-			}
-
 			if (!anim->IsForever() && ++currRep == anim->GetReps()) {
 				state = ANIMATOR_FINISHED;
 				NotifyStopped();
@@ -99,6 +95,59 @@ public:
 	//	sprite->Move(anim.GetDx(), anim.GetDy());
 	//}
 };
+
+class FrameRangeAnimator : public Animator {
+protected:
+	FrameRangeAnimation* anim = nullptr;
+	unsigned currFrame = 0; // animation state
+	unsigned currRep = 0; // animation state
+public:
+	void Progress(timestamp_t currTime) {
+		while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
+			if (currFrame == anim->GetEndFrame()) {
+				assert(anim->IsForever() || currRep < anim->GetReps());
+				currFrame = anim->GetStartFrame(); // flip to start
+			}
+			else
+				currFrame = (currFrame + 1) % anim->GetEndFrame();
+			lastTime += anim->GetDelay();
+			NotifyAction(*anim);
+			if (currFrame == anim->GetEndFrame())
+				if (!anim->IsForever() && ++currRep == anim->GetReps()) {
+					state = ANIMATOR_FINISHED;
+					NotifyStopped();
+					return;
+				}
+		}
+	}
+	unsigned GetCurrFrame(void) const { return currFrame; }
+	unsigned GetCurrRep(void) const { return currRep; }
+	void Start(Sprite* sprite, FrameRangeAnimation* anim, timestamp_t t) {
+		this->sprite = sprite;
+		this->anim = anim;
+		lastTime = t;
+		state = ANIMATOR_RUNNING;
+		currFrame = anim->GetStartFrame();
+		currRep = 0;
+		NotifyStarted();
+		NotifyAction(*anim);
+	}
+	FrameRangeAnimator(void) {
+		this->SetOnAction(
+			[=](Animator* animator, const Animation& anim) {
+				FrameRange_Action(sprite, animator, (const FrameRangeAnimation&)anim);
+			}
+		);
+	}
+	void FrameRange_Action(Sprite* sprite, Animator* animator, const FrameRangeAnimation& anim) {
+		auto* frameRangeAnimator = (FrameRangeAnimator*)animator;
+		if (frameRangeAnimator->GetCurrFrame() != anim.GetStartFrame() ||
+			frameRangeAnimator->GetCurrRep())
+			sprite->Move(anim.GetDx(), anim.GetDy());
+		sprite->SetFrame(frameRangeAnimator->GetCurrFrame());
+	}
+};
+
 
 class AnimatorManager {
 private:

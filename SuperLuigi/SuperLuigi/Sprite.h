@@ -8,9 +8,7 @@
 #include "Grid.h"
 #include "GravityHandler.h"
 #include "MotionQuantizer.h"
-
-class BoundingArea {
-};
+#include "BoundingArea.h"
 
 class Sprite {
 public:
@@ -34,7 +32,7 @@ public:
 	{
 		return gravity;
 	}
-	Sprite& SetHasDirectMotion(bool v) { directMotion = true; return *this; }
+	Sprite& SetHasDirectMotion(bool v) { directMotion = v; return *this; }
 	bool GetHasDirectMotion(void) const { return directMotion; }
 	Sprite& Move(int dx, int dy) {
 		if (directMotion) // apply unconditionally offsets!
@@ -45,49 +43,65 @@ public:
 			gravity.Check(box);
 			x = box.x;
 			y = box.y;
+			((BoundingBox*)(boundingArea))->area->x = x;
+			((BoundingBox*)(boundingArea))->area->y = y;
 		}
 		return *this;
-	}
+	}
+
 	template <typename Tfunc>
 	void SetMover(const Tfunc& f)
 	{
 		quantizer.SetMover(mover = f);
 	}
-	Rect& GetBox(void) const
+	void SetRange(int x, int y) {
+		quantizer = quantizer.SetRange(x, y);
+	}
+	const Rect& GetBox(void) const
 	{
-		Rect box(x, y, frameBox.w, frameBox.h);
-		return box;
+		return Rect(x, y, frameBox.w, frameBox.h);
 	}
 	void SetPos(int _x, int _y) { x = _x; y = _y; }
 	void SetZorder(unsigned z) { zorder = z; }
-	unsigned GetZorder(void) { return zorder; }	void SetFrame(byte i) {
+	unsigned GetZorder(void) { return zorder; }
+
+	void SetFrame(byte i) {
 		if (i != frameNo) {
 			assert(i < currFilm->GetTotalFrames());
 			frameBox = currFilm->GetFrameBox(frameNo = i);
 		}
 	}
 	byte GetFrame(void) const { return frameNo; }
-	void SetBoundingArea(const BoundingArea& area)
-	{
-		//assert(!boundingArea); boundingArea = area.Clone();
+	void SetBoundingArea(const BoundingArea& area){
+		assert(!boundingArea); 
+		*boundingArea = area;
 	}
-	void SetBoundingArea(BoundingArea* area)
-	{
-		assert(!boundingArea); boundingArea = area;
+	void SetBoundingArea(/*BoundingArea* area*/){
+		/*assert(!boundingArea); boundingArea = area;*/
+		boundingArea = (BoundingArea*)new BoundingBox();
+		//dynamic_cast<BoundingBox*> (boundingArea)->area = new Rect(0,0,16,16);
+		((BoundingBox*) (boundingArea))->area = new Rect(32, 32, 16, 16);
 	}
-	auto GetBoundingArea(void) const -> const BoundingArea*
-	{
+	auto GetBoundingArea(void) const -> const BoundingArea*{
 		return boundingArea;
 	}
-	auto GetTypeId(void) -> const std::string& { return typeId; }
-	void SetVisibility(bool v) { isVisible = v; }
-	bool IsVisible(void) const { return isVisible; }
-	bool CollisionCheck(const Sprite* s) const;
+	auto GetTypeId(void) -> const std::string& { 
+		return typeId; 
+	}
+	void SetVisibility(bool v) { 
+		isVisible = v; 
+	}
+	bool IsVisible(void) const { 
+		return isVisible; 
+	}
+	bool CollisionCheck(const Sprite* s) const {
+		return boundingArea->Intersects(s->GetBoundingArea());
+	};
 	void Display(ALLEGRO_BITMAP* dest, const Rect& dpyArea, const Clipper& clipper) const {
 		Rect clippedBox;
 		Point dpyPos;
-		if (clipper.Clip(GetBox(), dpyArea, &dpyPos, &clippedBox)) {
-			std::cout << "AA\n";
+		Rect r = GetBox();
+		if (clipper.Clip(r, dpyArea, &dpyPos, &clippedBox)) {
 			Rect clippedFrame = Rect(
 			frameBox.x + clippedBox.x,
 			frameBox.y + clippedBox.y,
@@ -97,14 +111,6 @@ public:
 			MaskedBlit(
 				currFilm->GetBitmap(),
 				clippedFrame,
-				dest,
-				dpyPos
-			);
-		}
-		else {
-			MaskedBlit(
-				currFilm->GetBitmap(),
-				GetBox(),
 				dest,
 				dpyPos
 			);
@@ -124,7 +130,14 @@ public:
 
 	Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId = "") :
 		x(_x), y(_y), currFilm(film), typeId(_typeId)
-	{		frameNo = currFilm->GetTotalFrames(); SetFrame(0);	}	Sprite() = default;};void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite) {
+	{
+		frameNo = currFilm->GetTotalFrames(); SetFrame(0);
+	}
+	Sprite() = default;
+};
+
+
+void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite) {
 	std::function<bool(Rect&)> function = [gridLayer](Rect& r){ return gridLayer->IsOnSolidGround(gridLayer->gridTileStatus, r); };
 	sprite->GetGravityHandler().SetOnSolidGround(
 		function

@@ -39,3 +39,24 @@ public:
 		const std::string& _id, unsigned _reps, int _dx, int _dy, unsigned _delay
 	) : Animation(_id), reps(_reps), dx(_dx), dy(_dy), delay(_delay) {}
 };
+
+class FrameRangeAnimation : public MovingAnimation {
+protected:
+	unsigned start = 0, end = 0;
+public:
+	using Me = FrameRangeAnimation;
+	unsigned GetStartFrame(void) const { return start; }
+	Me& SetStartFrame(unsigned v) { start = v; return *this; }
+	unsigned GetEndFrame(void) const { return end; }
+	Me& SetEndFrame(unsigned v) { end = v; return *this; }
+	Animation* Clone(void) const override {
+		return new FrameRangeAnimation(
+			id, start, end, GetReps(), GetDx(), GetDy(), GetDelay()
+		);
+	}
+	FrameRangeAnimation(
+		const std::string& _id,
+		unsigned start, unsigned end,
+		unsigned reps, int dx, int dy, int delay
+	) : start(start), end(end), MovingAnimation(id, reps, dx, dy, delay) {}
+};

@@ -173,7 +173,6 @@ private:
 		}
 	}
 
-
 public:
 	std::vector<int> emptyTiles;
 	GridMap  gridTileStatus;
@@ -208,14 +207,14 @@ public:
 		else
 			if (dx > 0)
 				FilterGridMotionRight(m, r, dx);
-
+		r.x += dx;
 		// try vertical move
 		if (dy < 0)
 			FilterGridMotionUp(m, r, dy);
 		else
 			if (dy > 0)
 				FilterGridMotionDown(m, r, dy);
-		r.x += dx;
+		
 		r.y += dy;
 	}
 

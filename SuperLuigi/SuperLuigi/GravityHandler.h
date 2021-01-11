@@ -16,6 +16,15 @@ protected:
 	OnStartFalling onStartFalling;
 	OnStopFalling onStopFalling;
 public:
+
+	void SetGravityAddicted(bool addiction) {
+		gravityAddicted = addiction;
+	}
+
+	bool GetGravityAddicted() {
+		return gravityAddicted;
+	}
+
 	template <typename T> void SetOnStartFalling(const T& f)
 	{
 		onStartFalling = f;
@@ -44,6 +53,7 @@ public:
 					isFalling = true;
 					onStartFalling();
 				}
+				
 		}
 	}
 };
