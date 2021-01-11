@@ -7,8 +7,8 @@
 #include <string>
 #include <sstream>
 
-#include "Types.h"
-#include "AllegroUtil.h"
+#include "../Types/Types.h"
+#include "../Util/AllegroUtil.h"
 
 
 enum BitDepth { bits8 = 1, bits16, bits24, bits32 };

@@ -1,5 +1,5 @@
 #pragma once
-#include "Types.h"
+#include "../Types/Types.h"
 void BitmapBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* destinationBitmap, Point destPoint) {
 	al_set_target_bitmap(destinationBitmap); //dbitmap
 	al_draw_bitmap_region(

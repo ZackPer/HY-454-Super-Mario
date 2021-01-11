@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <functional>
-#include "Types.h"
+#include "../Types/Types.h"
 
 namespace clip_util {
 	template <class T> bool clip_rect(

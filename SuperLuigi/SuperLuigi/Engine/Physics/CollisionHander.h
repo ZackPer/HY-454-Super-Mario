@@ -2,7 +2,8 @@
 #include <iostream>
 #include <assert.h>
 #include <functional>
-#include "Sprite.h"
+#include "../Sprite/Sprite.h"
+#include <list>
 
 class CollisionChecker final {
 public:

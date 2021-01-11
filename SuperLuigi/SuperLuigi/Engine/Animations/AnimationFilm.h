@@ -1,14 +1,14 @@
 #pragma once
-#include "Types.h"
-#include "AllegroUtil.h"
-#include "json.hpp"
+#include "../Types/Types.h"
+#include "../Util/AllegroUtil.h"
+#include "../../ThirdParty/json.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <set>
 
-#include "Tiles.h"
+#include "../Tiles/Tiles.h"
 
 using json = nlohmann::json;
 json parsedFilms;

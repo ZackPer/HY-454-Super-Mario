@@ -2,13 +2,13 @@
 #include <iostream>
 #include <assert.h>
 #include <functional>
-#include "Types.h"
-#include "AnimationFilm.h"
+#include "../Types/Types.h"
+#include "../Animations/AnimationFilm.h"
 #include "Clipper.h"
-#include "Grid.h"
-#include "GravityHandler.h"
-#include "MotionQuantizer.h"
-#include "BoundingArea.h"
+#include "../Grid/Grid.h"
+#include "../Physics/GravityHandler.h"
+#include "../Physics/MotionQuantizer.h"
+#include "../Physics/BoundingArea.h"
 
 class SpriteManager;
 

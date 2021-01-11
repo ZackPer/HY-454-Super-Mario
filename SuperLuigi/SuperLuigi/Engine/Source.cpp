@@ -4,16 +4,16 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <iostream>
-#include "AnimationFilm.h"
-#include "Animations.h"
-#include "Animators.h"
-#include "Tiles.h"
-#include "Grid.h"
+#include "Animations/AnimationFilm.h"
+#include "Animations/Animations.h"
+#include "Animations/Animators.h"
+#include "Tiles/Tiles.h"
+#include "Grid/Grid.h"
 #include "Game.h"
 #include "SystemClock.h"
-#include "Sprite.h"
-#include "Clipper.h"
-#include "CollisionHander.h"
+#include "Sprite/Sprite.h"
+#include "Sprite/Clipper.h"
+#include "Physics/CollisionHander.h"
 
 #define WIDTH	720
 #define	HEIGHT	540

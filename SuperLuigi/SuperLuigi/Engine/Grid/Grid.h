@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 
-#include "Types.h"
+#include "../Types/Types.h"
 
 extern TileLayer myTile;
 

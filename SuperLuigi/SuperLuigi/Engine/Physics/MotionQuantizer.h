@@ -1,8 +1,7 @@
 #pragma once
 #include <iostream>
 #include <functional>
-#include "Types.h"
-
+#include "../Types/Types.h"
 template <typename Tnum>
 int number_sign(Tnum x) {
 	return x > 0 ? 1 : x < 0 ? -1 : 0;

@@ -4,7 +4,7 @@
 #include "AnimationFilm.h"
 #include <iostream>
 #include <functional>
-#include "Sprite.h"
+#include "../Sprite/Sprite.h"
 
 extern TileLayer a;
 
