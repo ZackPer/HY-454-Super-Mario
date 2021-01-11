@@ -10,6 +10,8 @@
 #include "MotionQuantizer.h"
 #include "BoundingArea.h"
 
+class SpriteManager;
+
 class Sprite {
 public:
 	using Mover = std::function<void(Rect&, int* dx, int* dy)>;
@@ -126,20 +128,76 @@ public:
 				sprite->SetHasDirectMotion(true).Move(*dx, *dy).SetHasDirectMotion(false);
 		};
 	};
+	Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId);
 
-
-	Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId = "") :
-		x(_x), y(_y), currFilm(film), typeId(_typeId)
-	{
-		frameNo = currFilm->GetTotalFrames(); SetFrame(0);
-	}
+	
 	Sprite() = default;
 };
 
 
 void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite) {
-	std::function<bool(Rect&)> function = [gridLayer](Rect& r){ return gridLayer->IsOnSolidGround(gridLayer->gridTileStatus, r); };
+	sprite->gravity.SetGravityAddicted(true);
+	std::function<bool(Rect&)> function = [gridLayer](Rect& r){ 
+		return gridLayer->IsOnSolidGround(gridLayer->gridTileStatus, r); 
+	};
 	sprite->GetGravityHandler().SetOnSolidGround(
 		function
 	);
+}
+
+class SpriteManager final {
+public:
+	using SpriteList = std::list<Sprite*>;
+	using TypeLists = std::map<std::string, SpriteList>;
+private:
+	SpriteList dpyList;
+	TypeLists types;
+	static SpriteManager singleton;
+public:
+	void Add(Sprite* s) {
+		auto found = types.find(s->GetTypeId());
+
+		if (found == types.end())
+			types.insert(std::pair<std::string, SpriteList>(s->GetTypeId(), SpriteList()));
+		types.find(s->GetTypeId())->second.push_back(s);
+
+		if(dpyList.empty())
+			dpyList.push_back(s);
+		else
+			for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
+				if ((*it)->GetZorder() == s->GetZorder()) {
+					dpyList.insert(it, s);
+				}
+			}
+	}
+	void Remove(Sprite* s) {
+		types.find(s->GetTypeId())->second.remove(s);
+		dpyList.remove(s);
+	}
+	auto GetDisplayList(void) -> const SpriteList&
+	{
+		return dpyList;
+	}
+	auto GetTypeList(const std::string& typeId) -> const SpriteList&
+	{
+		return types[typeId];
+	}
+	static auto GetSingleton(void) -> SpriteManager&
+	{
+		return singleton;
+	}
+	static auto GetSingletonConst(void) -> const SpriteManager&
+	{
+		return singleton;
+	}
+};
+
+SpriteManager SpriteManager::singleton;
+
+Sprite::Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId = "") :
+	x(_x), y(_y), currFilm(film), typeId(_typeId)
+	{
+		frameNo = currFilm->GetTotalFrames();
+		SetFrame(0);
+		SpriteManager::GetSingleton().Add(this);
 }

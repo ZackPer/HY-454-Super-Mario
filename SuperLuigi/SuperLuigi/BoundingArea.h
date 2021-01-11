@@ -18,11 +18,13 @@ public:
 	bool Intersects(const BoundingArea* shape) const {
 		return shape->Intersects(this);
 	}
-	//TO FIX
+	//TO FIX		
 	bool Intersects(const BoundingBox* box2) const{
 		return(
-			((area->x < box2->area->x && box2->area->x < area->x + area->w) && (area->y < box2->area->y&& box2->area->y < area->y + area->h)) ||
-			((box2->area->x < area->x && area->x < box2->area->x + box2->area->w) && (box2->area->y < area->y && area->y < box2->area->y + box2->area->h))
+			((area->x <= box2->area->x && box2->area->x <= area->x + area->w) && (area->y <= box2->area->y && box2->area->y <= area->y + area->h))				||
+			((box2->area->x <= area->x && area->x <= box2->area->x + box2->area->w) && (box2->area->y <= area->y && area->y <= box2->area->y + box2->area->h))	||
+			((area->x <= box2->area->x && box2->area->x <= area->x + area->w) && (box2->area->y <= area->y && area->y <= box2->area->y + box2->area->h))		||
+			((box2->area->x <= area->x && area->x <= box2->area->x + box2->area->w) && (area->y <= box2->area->y && box2->area->y <= area->y + area->h))
 		);
 	}
 };

@@ -25,35 +25,35 @@ public:
 		return gravityAddicted;
 	}
 
-	template <typename T> void SetOnStartFalling(const T& f)
-	{
+	template <typename T> void SetOnStartFalling(const T& f){
 		onStartFalling = f;
 	}
-	template <typename T> void SetOnStopFalling(const T& f)
-	{
+	template <typename T> void SetOnStopFalling(const T& f){
 		onStopFalling = f;
 	}
-	template <typename T> void SetOnSolidGround(const T& f)
-	{
+	template <typename T> void SetOnSolidGround(const T& f){
 		onSolidGround = f;
 	}
 
-	void Reset(void) { isFalling = false; }
+	void Reset(void) { 
+		isFalling = false; 
+	}
 
 	void Check(Rect& r) {
 		if (gravityAddicted) {
 			if (onSolidGround(r)) {
 				if (isFalling) {
 					isFalling = false;
-					onStopFalling();
+					if (onStopFalling)
+						onStopFalling(); //stop falling animation
 				}
 			}
 			else
 				if (!isFalling) {
 					isFalling = true;
-					onStartFalling();
-				}
-				
+					if(onStartFalling)
+						onStartFalling(); //start falling animation
+				}	
 		}
 	}
 };

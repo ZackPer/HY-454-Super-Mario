@@ -148,7 +148,6 @@ public:
 	}
 };
 
-
 class AnimatorManager {
 private:
 	std::set<Animator*> running, suspended;
