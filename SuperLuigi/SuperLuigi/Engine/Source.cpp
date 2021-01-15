@@ -33,6 +33,9 @@ Sprite marioSprite;
 Sprite luigiSprite;
 Clipper clipper;
 
+//Pipes
+Sprite pipe;
+
 namespace mario {
 	class App {
 	public:
@@ -107,8 +110,11 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 		al_flip_display();
 		AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 		BitmapBlit(myTile.viewWin.bitmap, myTile.viewWin.dimensions, beforeScaleBitmap, Point(0,0));
-		marioSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+		//marioSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
 		luigiSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+		pipe.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+		marioSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(beforeScaleBitmap, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
 		CollisionChecker::GetSingleton().Check();
@@ -125,7 +131,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 int main() {
 	ALLEGRO_DISPLAY *display;
 
-	myTile = TileLayer("CSVMaps/mario1.csv");
+	myTile = TileLayer("CSVMaps/mario_with_pipe.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -178,7 +184,19 @@ int main() {
 	luigiSprite = Sprite(32, 32, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "luigi");
 	std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
 		s1->Move(1, 1);
+		std::cout <<"haah" << std::endl;
 	};
+
+	 
+	//Sprite 3 - Pipe
+	pipe = Sprite(192, 112, AnimationFilmHolder::Get().GetFilm("test2"), "pipe");
+	std::function<void(Sprite* s1, Sprite* s2)> pipeF = [](Sprite* s1, Sprite* s2) {
+		std::cout << "Press down to go inside the pipe :)" << std::endl;
+	};
+	CollisionChecker::GetSingleton().Register(&marioSprite, &pipe, pipeF);
+	pipe.SetBoundingArea1(193,96,30,16);
+	
+
 
 	CollisionChecker::GetSingleton().Register(&marioSprite, &luigiSprite, f);
 	marioSprite.SetBoundingArea();
