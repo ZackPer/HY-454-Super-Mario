@@ -10,6 +10,7 @@
 #include "Tiles/Tiles.h"
 #include "Grid/Grid.h"
 #include "Game.h"
+#include "Sprite/Pipe.h"
 #include "SystemClock.h"
 #include "Sprite/Sprite.h"
 #include "Sprite/Clipper.h"
@@ -34,7 +35,7 @@ Sprite luigiSprite;
 Clipper clipper;
 
 //Pipes
-Sprite pipe;
+Pipe first_pipe;
 
 namespace mario {
 	class App {
@@ -112,7 +113,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 		BitmapBlit(myTile.viewWin.bitmap, myTile.viewWin.dimensions, beforeScaleBitmap, Point(0,0));
 		//marioSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
 		luigiSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
-		pipe.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+		first_pipe.GetSprite().Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
 		marioSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
 
 		al_set_target_bitmap(al_get_backbuffer(display));
@@ -189,14 +190,14 @@ int main() {
 
 	 
 	//Sprite 3 - Pipe
-	pipe = Sprite(192, 112, AnimationFilmHolder::Get().GetFilm("test2"), "pipe");
+	Sprite sprite_pipe = Sprite(192, 112, AnimationFilmHolder::Get().GetFilm("test2"), "pipe");
+	sprite_pipe.SetBoundingArea1(sprite_pipe.GetBox().x+3, sprite_pipe.GetBox().y, 
+		sprite_pipe.GetBox().w-5, sprite_pipe.GetBox().h-1);
+	first_pipe = Pipe(sprite_pipe);
 	std::function<void(Sprite* s1, Sprite* s2)> pipeF = [](Sprite* s1, Sprite* s2) {
 		std::cout << "Press down to go inside the pipe :)" << std::endl;
 	};
-	CollisionChecker::GetSingleton().Register(&marioSprite, &pipe, pipeF);
-	pipe.SetBoundingArea1(193,96,30,16);
-	
-
+	CollisionChecker::GetSingleton().Register(&marioSprite, &first_pipe.GetSprite(), pipeF);	
 
 	CollisionChecker::GetSingleton().Register(&marioSprite, &luigiSprite, f);
 	marioSprite.SetBoundingArea();
