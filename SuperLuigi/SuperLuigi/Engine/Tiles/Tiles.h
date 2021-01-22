@@ -39,16 +39,25 @@ public:
 	bool dpyChanged = true;
 	Dim dpyX = 0, dpyY = 0;
 
-
 	TileLayer() {
 		TileLayerBitmap = nullptr;
 		tileset = nullptr;
+	}
+
+	int GetMaxHeight() {
+		return maxHeight;
+	}
+
+	int GetMaxWidth() {
+		return maxWidth;
 	}
 
 	TileLayer(std::string filename) {
 		this->TileMapIndexes = this->getTileMapIDs(filename);
 		TileLayerBitmap = nullptr;
 		tileset = nullptr;
+		maxHeight = TileMapIndexes.size()*16;
+		maxWidth = TileMapIndexes[0].size()*16;
 	}
 
 	TileMap getTileMapIDs(std::string filename) {
@@ -146,7 +155,19 @@ public:
 		return viewWin.dimensions;
 	}
 
+	void ScrollAccordingToCharacter(Rect& viewWin, int xCharacter, int yCharacter) {
+		dpyChanged = true;
+		viewWin.x += xCharacter;
+		viewWin.y += yCharacter;
+		if (viewWin.x >= 100)
+			viewWin.x = 100;
+		if (viewWin.y >= viewWin.h)
+			viewWin.y = viewWin.h;
+	}
+
 private:
+	int maxHeight, maxWidth;
+
 	Index MakeIndex2(byte row, byte col)
 	{
 		return (MUL_TILE_WIDTH(col) << TILEX_SHIFT) | MUL_TILE_HEIGHT(row);
@@ -192,7 +213,6 @@ private:
 		return tileMapIndexes.size() * TILE_HEIGHT;
 	}
 
-	
 
 
 	Index GetTile(TileMap TileMapIndexes, Dim col, Dim row)

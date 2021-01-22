@@ -70,7 +70,7 @@ protected:
 public:
 	void Progress(timestamp_t currTime) {
 		while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
-			lastTime += anim->GetDelay(); //nice
+			lastTime += anim->GetDelay();
 			NotifyAction(*anim);
 			if (!anim->IsForever() && ++currRep == anim->GetReps()) {
 				state = ANIMATOR_FINISHED;
@@ -104,11 +104,13 @@ public:
 				assert(anim->IsForever() || currRep < anim->GetReps());
 				currFrame = anim->GetStartFrame(); // flip to start
 			}
-			else
+			else {
 				currFrame = (currFrame + 1) % anim->GetEndFrame();
+			}
+				
 			lastTime += anim->GetDelay();
 			NotifyAction(*anim);
-			if (currFrame == anim->GetEndFrame())
+			if (currFrame == anim->GetEndFrame()-1)
 				if (!anim->IsForever() && ++currRep == anim->GetReps()) {
 					state = ANIMATOR_FINISHED;
 					NotifyStopped();
