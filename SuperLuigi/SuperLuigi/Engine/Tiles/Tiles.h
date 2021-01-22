@@ -44,6 +44,11 @@ public:
 		tileset = nullptr;
 	}
 
+	void SetViewWin(ViewWindow vw) {
+		this->viewWin = vw;
+		dpyBuffer = al_create_bitmap(vw.dimensions.w + TILE_WIDTH, vw.dimensions.h + TILE_HEIGHT);
+	}
+
 	int GetMaxHeight() {
 		return maxHeight;
 	}
@@ -132,7 +137,6 @@ public:
 			dpyX = MOD_TILE_WIDTH(viewWin.x);
 			dpyY = MOD_TILE_WIDTH(viewWin.y);
 			dpyChanged = false;
-			dpyBuffer = al_create_bitmap(((endCol - startCol) + 1) * 16, ((endRow - startRow) + 1) * 16);
 			for (Dim row = startRow; row <= endRow; ++row)
 				for (Dim col = startCol; col <= endCol; ++col)
 					PutTile(

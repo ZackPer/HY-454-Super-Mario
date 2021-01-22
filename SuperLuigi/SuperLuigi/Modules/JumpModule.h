@@ -41,7 +41,6 @@ public:
 		);
 		jumpAnimator->SetOnFinish(
 			[=](Animator *animator) {
-			std::cout << "asdasda\n";
 				self->gravity.SetGravityAddicted(true);
 			}
 		);

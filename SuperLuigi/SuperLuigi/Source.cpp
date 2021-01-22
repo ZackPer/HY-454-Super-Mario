@@ -159,8 +159,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-
-	myTile = TileLayer("CSVMaps/mario2.csv");
+	myTile = TileLayer("repo/SuperLuigi/SuperLuigi/CSVMaps/mario2.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -181,11 +180,14 @@ int main() {
 
 	//mapping map indexes to tilesetIndexes
 	TileMap mapTileIndexes;
-	myTile.getMapIndexes(mapTileIndexes,myTile.TileMapIndexes);
+	myTile.getMapIndexes(mapTileIndexes, myTile.TileMapIndexes);
 
 	//initializing view window
-	myTile.viewWin = ViewWindow(WIDTH/3, HEIGHT/3, 0, 0,
-									0, 0, 0, 0);
+	myTile.SetViewWin(ViewWindow(
+		WIDTH / 3, HEIGHT / 3, 0, 0, 
+		0, 0, 0, 0)
+	);
+
 	cameraCoords = Rect(
 		0,
 		0,

@@ -171,14 +171,16 @@ public:
 			}
 
 			mario->setCurrFilm(walkRightFilm);
+			mario->SetFrame(1);
+			mario->SetFrame(0);
 		}
 		
 	}
 
 	void ApplyAcceleration(bool isRunning) {
 		if (isRunning) {
-			if (acceleration <= 2.5)
-				acceleration += 0.1;
+			if (acceleration <= 2)
+				acceleration += 0.03;
 		}
 		else
 			acceleration = 1;
