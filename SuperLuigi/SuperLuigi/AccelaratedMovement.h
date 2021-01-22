@@ -45,8 +45,7 @@ public:
 	int FindCurrentOffset(uint64_t currTime) {
 		auto tmicro = currTime - startTime;
 		float t = toSeconds(currTime - startTime);
-		int currentDx = Uo * t + direction * (a * pow(t, 2)) / 2;
-		return currentDx;
+		return Uo * t + direction * (a * pow(t, 2)) / 2;
 	}
 
 	void PrepareAccelarationPhysics(uint64_t currTime) {

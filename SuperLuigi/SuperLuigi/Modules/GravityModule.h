@@ -3,19 +3,19 @@
 #include <iostream>
 #include <math.h>
 #include <cstdint>
-#include "Engine/SystemClock.h"
-#include "Engine/Sprite/Sprite.h"
-#include "Engine/Animations/Animations.h"
-#include "Engine/Animations/Animators.h"
+#include "../Engine/SystemClock.h"
+#include "../Engine/Sprite/Sprite.h"
+#include "../Engine/Animations/Animations.h"
+#include "../Engine/Animations/Animators.h"
 
-#include "AccelaratedMovement.h"
+#include "../AccelaratedMovement.h"
 
 class GravityModule {
 public:
 	GravityModule() = default;
 	GravityModule(Sprite *self) {
 		this->self = self;
-		animation = new FrameRangeAnimation("littlemario.jump.right", 0, 0, 0, 0, 0, 10000);
+		animation = new FrameRangeAnimation("", 0, 0, 0, 0, 0, 10000);
 		animator = new  FrameRangeAnimator();
 	}
 	
@@ -51,6 +51,19 @@ public:
 		animator->Stop();
 	}
 
+	// Util
+	void SetIsFalling(bool isFalling) {
+		this->isFalling = isFalling;
+	}
+
+	bool GetIsFalling() {
+		return isFalling;
+	}
+
+	bool *GetIsFallingRef() {
+		return &isFalling;
+	}
+
 private: 
 	Sprite				*self;
 	AccelaratedMovement physics;
@@ -58,7 +71,7 @@ private:
 	FrameRangeAnimator	*animator;
 	uint64_t			animDelay;
 	int					startPos;
-	bool				*isFalling;
+	bool				isFalling;
 
 	// For physics for freefall.
 	void PreparePhysics() {

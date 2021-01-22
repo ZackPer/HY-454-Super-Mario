@@ -3,12 +3,12 @@
 #include <iostream>
 #include <math.h>
 #include <cstdint>
-#include "Engine/SystemClock.h"
-#include "Engine/Sprite/Sprite.h"
-#include "Engine/Animations/Animations.h"
-#include "Engine/Animations/Animators.h"
+#include "../Engine/SystemClock.h"
+#include "../Engine/Sprite/Sprite.h"
+#include "../Engine/Animations/Animations.h"
+#include "../Engine/Animations/Animators.h"
 
-#include "AccelaratedMovement.h"
+#include "../AccelaratedMovement.h"
 
 class JumpModule {
 public:
@@ -26,7 +26,9 @@ public:
 		//Basic JumpAnimator;
 		jumpAnimator->SetOnStart(
 			[=](Animator *) {
+				self->gravity.SetGravityAddicted(false);
 				isJumping = true;
+				*isFalling = true;
 			}
 		);
 		jumpAnimator->SetOnAction(
@@ -49,7 +51,6 @@ public:
 		assert(jumpAnimator && animation);
 		isJumping = true;
 		PrepareJumpPhysics(height, jumpDuration);
-		self->gravity.SetGravityAddicted(false);
 		jumpAnimator->Start(self, animation, physics.startTime);
 	}
 
@@ -64,12 +65,9 @@ public:
 			physics.endTime > currTime &&
 			dh < height - 16)
 		{
-			isStopped = true;
 			jumpAnimator->Stop();
-
+			isStopped = true;
 			PrepareJumpPhysics(16, forceStopDuration);
-			self->gravity.SetGravityAddicted(false);
-
 			jumpAnimator->Start(self, animation, physics.startTime);
 		}
 	}
