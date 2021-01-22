@@ -14,13 +14,13 @@ public:
 	uint64_t		endTime;
 
 	//This dictates if the movement is accelarated or decelarated
-	enum Direction {
+	enum Sign {
 		POSITIVE = 1, NEGATIVE = -1
 	};
-	Direction direction;
+	Sign direction;
 
 	AccelaratedMovement() = default;
-	AccelaratedMovement(float height, uint64_t duration, Direction direction){
+	AccelaratedMovement(float height, uint64_t duration, Sign direction){
 		this->height = height;
 		this->duration = duration;
 		this->direction = direction;
@@ -66,4 +66,5 @@ public:
 	float toSeconds(uint64_t micro) {
 		return micro * pow(10, -6);
 	}
+
 };

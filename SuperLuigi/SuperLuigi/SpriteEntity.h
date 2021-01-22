@@ -47,7 +47,7 @@ public:
 protected:
 	std::string		id;
 	Sprite			*self;
-	int				speed = 1;
+	int				speed = 2;
 	GravityModule	gravityModule;
 
 	// Callback functions for class customization

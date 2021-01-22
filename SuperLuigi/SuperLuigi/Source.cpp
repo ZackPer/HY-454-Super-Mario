@@ -4,18 +4,20 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <iostream>
-#include "Animations/AnimationFilm.h"
-#include "Animations/Animations.h"
-#include "Animations/Animators.h"
-#include "Tiles/Tiles.h"
-#include "Grid/Grid.h"
+#include "./Engine/Animations/AnimationFilm.h"
+#include "./Engine/Animations/Animations.h"
+#include "./Engine/Animations/Animators.h"
+#include "./Engine/Tiles/Tiles.h"
+#include "./Engine/Grid/Grid.h"
 #include "Game.h"
-#include "SystemClock.h"
-#include "Sprite/Sprite.h"
-#include "Sprite/Clipper.h"
-#include "Physics/CollisionHander.h"
-#include "../MarioWalkAnimation.h"
-#include "../CameraMover.h"
+#include "./Engine/SystemClock.h"
+#include "./Engine/Sprite/Sprite.h"
+#include "./Engine/Sprite/Clipper.h"
+#include "./Engine/Physics/CollisionHander.h"
+#include "./MarioWalkAnimation.h"
+#include "./CameraMover.h"
+#include "./Mario.h"
+#include "./MovingEntity.h"
 
 #define WIDTH	720
 #define	HEIGHT	540
@@ -35,6 +37,10 @@ Sprite marioSprite;
 Sprite luigiSprite;
 Clipper clipper;
 Rect cameraCoords;
+
+Mario *supermario;
+MovingEntity *goomba;
+
 namespace mario {
 	class App {
 	public:
@@ -63,7 +69,8 @@ namespace mario {
 }
 
 TileLayer a;
-int startPosX = 16, startPosY = 0;
+int startPosX = 0, startPosY = 0;
+
 void initializeAnimationsAndSprites() {
 	//Initialize AnimationFilms
 	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
@@ -72,32 +79,28 @@ void initializeAnimationsAndSprites() {
 	clipper = Clipper();
 	clipper = MakeTileLayerClipper(&myTile);
 	
-	//Mario Sprite
-	marioSprite = Sprite(startPosX, startPosY, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario");
-	std::function<void(Rect&, int* dx, int* dy)> gridMover = marioSprite.MakeSpriteGridLayerMover(&myGrid, &marioSprite);
-	marioSprite.SetMover(gridMover);
-	marioSprite.SetRange(1, 1);
-	PrepareSpriteGravityHandler(&myGrid, &marioSprite);
+	//Mario
+	supermario = new Mario(&myGrid, &(myTile.viewWin.dimensions));
 
-	//Luigi Sprite
-	luigiSprite = Sprite(250, 32, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "luigi");
+	//Goomba
+	goomba = new MovingEntity(50, 50, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
+
 	std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
 		//s1->Move(1, 1);
 	};
 	
 	//Collisions
-	CollisionChecker::GetSingleton().Register(&marioSprite, &luigiSprite, f);
-	marioSprite.SetBoundingArea();
-	luigiSprite.SetBoundingArea();
+	//CollisionChecker::GetSingleton().Register(&marioSprite, &luigiSprite, f);
 
-	cameraMover = CameraMover(&myTile, &marioSprite, startPosX);
+	cameraMover = CameraMover(&myTile, supermario->GetSelf(), startPosX);
 }
+
 
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* marioHandler) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
 
-	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30);
+	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60);
 
 	event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -114,34 +117,11 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
 		if (ev.type == ALLEGRO_EVENT_TIMER) {
-			al_get_keyboard_state(&keyboardState);
-			//actions on keys
-			if (al_key_down(&keyboardState, ALLEGRO_KEY_DOWN)) {
-				direction = DOWN;
-			}
-			else if (al_key_down(&keyboardState, ALLEGRO_KEY_UP)) {
-				direction = UP;
-			}
-			if (al_key_down(&keyboardState, ALLEGRO_KEY_RIGHT)) {
-				direction = RIGHT;	
-			}
-			else if (al_key_down(&keyboardState, ALLEGRO_KEY_LEFT)) {
-				direction = LEFT;
-			}
-			if (al_key_down(&keyboardState, ALLEGRO_KEY_SPACE)) {
-				isRunning = true;
-			}
-			if (al_key_down(&keyboardState, ALLEGRO_KEY_1)) {
-				super = true;
-			}
-			if (al_key_down(&keyboardState, ALLEGRO_KEY_2)) {
-				super = false;
-			}
-
 			//before all the movements
-			startPosX = marioSprite.GetBox().x;
-			startPosY = marioSprite.GetBox().y;
+			startPosX = supermario->GetSelf()->GetBox().x;
+			startPosY = supermario->GetSelf()->GetBox().y;
 
+			supermario->InputPoll(direction, isRunning, super);
 			//movements
 			marioHandler->Move(direction, isRunning, super);
 
@@ -157,13 +137,13 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 			myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
 
 			//after all the movements
-			dx = marioSprite.GetBox().x - startPosX;
-			dy = marioSprite.GetBox().y - startPosY;
-	
+			dx = supermario->GetSelf()->GetBox().x - startPosX;
+			dy = supermario->GetSelf()->GetBox().y - startPosY;
 			cameraMover.ScrollAccordingToCharacter(dx, dy);
 			BitmapBlit(myTile.viewWin.bitmap, Rect( 0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));			
-			marioSprite.Display(beforeScaleBitmap, cameraCoords, clipper);
-			luigiSprite.Display(beforeScaleBitmap, cameraCoords, clipper);
+			supermario->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
+			goomba->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
+
 			al_set_target_bitmap(al_get_backbuffer(display));
 			al_draw_scaled_bitmap(beforeScaleBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, 0, 0, WIDTH, HEIGHT, 0);
 			dx = dy = 0;
@@ -180,7 +160,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 int main() {
 	ALLEGRO_DISPLAY *display;
 
-	myTile = TileLayer("CSVMaps/mario1.csv");
+	myTile = TileLayer("CSVMaps/mario2.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -213,9 +193,8 @@ int main() {
 		myTile.viewWin.dimensions.h
 	);
 
-	initializeAnimationsAndSprites();
-	MarioMover marioHandler(&marioSprite);
-
+	initializeAnimationsAndSprites();	
+	MarioMover marioHandler(supermario->GetSelf());
 	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
 	CoreLoop(display, mapTileIndexes, &marioHandler);
 	

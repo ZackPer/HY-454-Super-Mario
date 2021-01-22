@@ -129,6 +129,12 @@ public:
 			}
 		);
 
+		RemainingMoveFramesAnimator.SetOnFinish(
+			[=](Animator *) {
+
+			}
+		);
+
 		RemainingMoveLeftFrameAnimation = FrameRangeAnimation(
 			walkLeftFilm->GetId(),
 			0,
@@ -148,6 +154,8 @@ public:
 			0,
 			20000
 		);
+
+		
 	}
 
 	void SetSuper(bool b) {		
@@ -212,6 +220,8 @@ public:
 			MoveAnimator.Stop();
 			FramesAnimator.Stop();
 			mario->SetFrame(0);
+			mario->Move(0, 0);
 		}	
+
 	}
 };

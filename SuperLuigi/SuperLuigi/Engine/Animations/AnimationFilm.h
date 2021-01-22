@@ -30,6 +30,7 @@ class AnimationFilm {
 	std::string id;
 public:
 	byte GetTotalFrames(void) const {
+		auto asd = boxes.size();
 		return boxes.size();
 	}
 	ALLEGRO_BITMAP* GetBitmap(void) const { 

@@ -38,6 +38,9 @@ public:
 			tileLayer->dpyChanged = true;
 			dy = tileLayer->GetMaxHeight() - viewWindowEnd;
 		}	
+		else {
+			dy = 0;
+		}
 	}
 
 	void ScrollAccordingToCharacter(int& dx, int& dy) {

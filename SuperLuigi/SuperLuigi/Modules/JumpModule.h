@@ -15,8 +15,8 @@ public:
 	JumpModule() = default;
 	JumpModule(Sprite *self) {
 		this->self = self;
-		animation = new FrameRangeAnimation("littlemario.jump.right", 0, 0, 0, 0, 0, 10000);
-		jumpAnimator = new  FrameRangeAnimator();
+		animation = new MovingAnimation("jump_move", 0, 0, 0, animDelay);
+		jumpAnimator = new  MovingAnimator();
 	}
 
 	// Initialize Animators
@@ -41,6 +41,7 @@ public:
 		);
 		jumpAnimator->SetOnFinish(
 			[=](Animator *animator) {
+			std::cout << "asdasda\n";
 				self->gravity.SetGravityAddicted(true);
 			}
 		);
@@ -51,7 +52,7 @@ public:
 		assert(jumpAnimator && animation);
 		isJumping = true;
 		PrepareJumpPhysics(height, jumpDuration);
-		jumpAnimator->Start(self, animation, physics.startTime);
+		jumpAnimator->Start(animation, physics.startTime);
 	}
 
 	// From the moment it is being called it jumps 16 pixels heighter and then renables gravity
@@ -68,7 +69,7 @@ public:
 			jumpAnimator->Stop();
 			isStopped = true;
 			PrepareJumpPhysics(16, forceStopDuration);
-			jumpAnimator->Start(self, animation, physics.startTime);
+			jumpAnimator->Start(animation, physics.startTime);
 		}
 	}
 
@@ -87,15 +88,15 @@ public:
 
 private:
 	Sprite				*self;
-	FrameRangeAnimation *animation;
-	FrameRangeAnimator	*jumpAnimator;
+	MovingAnimation		*animation;
+	MovingAnimator		*jumpAnimator;
 	bool				*isFalling;
 	bool				isJumping = false;
 	bool				isStopped = false;
 	int					height = 80;
 	int					animRepeats;
 	int					startPos;
-	uint64_t			animDelay = 10000;
+	uint64_t			animDelay = 5000;
 	uint64_t			jumpDuration = (float)pow(10, 6) * 0.7;
 	uint64_t			forceStopDuration = pow(10, 6) * 0.3;
 	AccelaratedMovement physics;

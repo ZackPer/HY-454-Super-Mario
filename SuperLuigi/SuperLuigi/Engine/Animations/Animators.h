@@ -110,12 +110,13 @@ public:
 				
 			lastTime += anim->GetDelay();
 			NotifyAction(*anim);
-			if (currFrame == anim->GetEndFrame()-1)
+			if (currFrame == anim->GetEndFrame() - 1)
 				if (!anim->IsForever() && ++currRep == anim->GetReps()) {
 					state = ANIMATOR_FINISHED;
 					NotifyStopped();
 					return;
 				}
+
 		}
 	}
 	unsigned GetCurrFrame(void) const { return currFrame; }

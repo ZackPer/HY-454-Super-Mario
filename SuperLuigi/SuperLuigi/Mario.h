@@ -12,21 +12,21 @@
 class Mario : public SpriteEntity {
 public:
 	Mario() = default;
-	Mario(GridLayer *myGrid) 
+	Mario(GridLayer *myGrid, Rect *viewWindow) 
 		: SpriteEntity(0, 0, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
-	{
+	{	
 		//My module Initialization
 		jumpModule = JumpModule(self);
 		jumpModule.SetIsFalling(gravityModule.GetIsFallingRef());
 		jumpModule.Init();
 
 		// Super's Initializations
-		SetMover(myGrid);
+		PrepareMoverWithViewWindowCheck(myGrid, viewWindow);
 		InitGravity(myGrid);
 		self->Move(0, 0); //This is to calculate gravity at least once.
 	}
 
-	void InputPoll() {
+	void InputPoll(Direction& direction, bool& isRunning, bool& super) {
 		uint64_t currentTime = SystemClock::Get().micro_secs();
 		if (currentTime - inputDelay > lastInput) {
 			lastInput = currentTime;
@@ -43,19 +43,48 @@ public:
 				jumpModule.ForceEndJump();
 			}
 
+			al_get_keyboard_state(&keyState);
+			//actions on keys
+			if (al_key_down(&keyState, ALLEGRO_KEY_DOWN)) {
+				direction = DOWN;
+			}
+			else if (al_key_down(&keyState, ALLEGRO_KEY_UP)) {
+				direction = UP;
+			}
 			if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT)) {
-				dx += speed;
+				direction = RIGHT;
 			}
-			if (al_key_down(&keyState, ALLEGRO_KEY_LEFT)) {
-				dx -= speed;
+			else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT)) {
+				direction = LEFT;
 			}
-
-			self->Move(dx, dy);
-			dx = 0;
-			dy = 0;
+			if (al_key_down(&keyState, ALLEGRO_KEY_SPACE)) {
+				isRunning = true;
+			}
+			if (al_key_down(&keyState, ALLEGRO_KEY_1)) {
+				super = true;
+			}
+			if (al_key_down(&keyState, ALLEGRO_KEY_2)) {
+				super = false;
+			}
 		}
 	}
 	
+	void PrepareMoverWithViewWindowCheck(GridLayer *myGrid, Rect *viewWindow) {
+		auto defaultMover = self->MakeSpriteGridLayerMover(myGrid, self);
+		auto viewWindowBoundriesCheck = [=](Rect& box, int *dx, int *dy) {
+			auto position = self->GetBox();
+			if (position.x + *dx < viewWindow->x) {
+				*dx = viewWindow->x - position.x;
+			}
+			else if (position.x + *dx > viewWindow->x + viewWindow->w) {
+				*dx = viewWindow->x + viewWindow->w - position.x;
+			}
+			defaultMover(box, dx, dy);
+		};
+		self->SetMover(viewWindowBoundriesCheck);
+
+	}
+
 protected:
 	JumpModule		jumpModule;
 	int				dx;
