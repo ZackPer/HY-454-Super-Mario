@@ -8,12 +8,12 @@
 #include "Engine/SystemClock.h"
 #include "Engine/Grid/Grid.h"
 #include "SpriteEntity.h"
-#include "NPCMove.h"
+#include "MovementAI.h"
 
-class Enemy : public SpriteEntity {
+class MovingEntity : public SpriteEntity {
 public:
-	Enemy() = default;
-	Enemy(int x, int y, AnimationFilm *film, std::string type, GridLayer *myGrid)
+	MovingEntity() = default;
+	MovingEntity(int x, int y, AnimationFilm *film, std::string type, GridLayer *myGrid)
 		: SpriteEntity(x, y, film, type)
 	{
 		InitGravity(myGrid);
@@ -22,14 +22,14 @@ public:
 		animator = new FrameRangeAnimator();
 		animator->Start(self, animation, SystemClock::Get().micro_secs());
 
-		movement = NPCMovement(self, 1);
+		movement = MovementAI(self, 1);
 		movement.SetEdgeDetection(true);
 		movement.Init(myGrid);
 		self->Move(0, 0);
 	}
 
 protected:
-	NPCMovement			movement;
+	MovementAI			movement;
 	FrameRangeAnimation *animation;
 	FrameRangeAnimator	*animator;
 

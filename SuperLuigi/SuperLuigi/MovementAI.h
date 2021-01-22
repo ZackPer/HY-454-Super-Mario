@@ -7,16 +7,17 @@
 #include "Engine/Sprite/Sprite.h"
 #include "Engine/SystemClock.h"
 
-class NPCMovement {
+class MovementAI {
 public:
-	NPCMovement() = default;
-	NPCMovement(Sprite *self, int speed) {
+	MovementAI() = default;
+	MovementAI(Sprite *self, int speed) {
 		this->self = self;
 		this->speed = speed;
 		movingAnimation = new MovingAnimation("goomba.walk", 0, 0, 0, 20000);
 		movingAnimator = new MovingAnimator();
 	}
 
+	// Initialize mover and animator
 	void Init(GridLayer *myGrid) {
 		PrepareEdgeDetectionMover(myGrid);
 		movingAnimator->SetOnAction(
@@ -28,7 +29,6 @@ public:
 				self->Move(speed * sign, 0);
 				if (lastPos == self->GetBox()) { //That means it hit a wall
 					sign *= -1;
-					
 				}
 			}
 		);
