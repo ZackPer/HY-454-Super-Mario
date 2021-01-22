@@ -13,7 +13,9 @@ public:
 class BoundingBox : BoundingArea {
 public:
 	Rect* area;
-	BoundingBox() {}
+	BoundingBox() {
+		area = new Rect();
+	}
 
 	bool Intersects(const BoundingArea* shape) const {
 		return shape->Intersects(this);

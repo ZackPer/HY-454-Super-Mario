@@ -87,8 +87,8 @@ public:
 	void SetBoundingArea(/*BoundingArea* area*/){
 		/*assert(!boundingArea); boundingArea = area;*/
 		boundingArea = (BoundingArea*)new BoundingBox();
-		//dynamic_cast<BoundingBox*> (boundingArea)->area = new Rect(0,0,16,16);
-		((BoundingBox*) (boundingArea))->area = new Rect(32, 32, 16, 16);
+		Rect rect = GetBox();
+		*(((BoundingBox*) (boundingArea))->area) = rect;
 	}
 	auto GetBoundingArea(void) const -> const BoundingArea*{
 		return boundingArea;
