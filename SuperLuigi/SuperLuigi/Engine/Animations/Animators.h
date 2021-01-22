@@ -104,7 +104,7 @@ protected:
 public:
 	void Progress(timestamp_t currTime) {
 		while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
-			if (currFrame == anim->GetEndFrame()) {
+			if (currFrame == anim->GetEndFrame()-1) {
 				assert(anim->IsForever() || currRep < anim->GetReps());
 				currFrame = anim->GetStartFrame(); // flip to start
 			}
@@ -114,7 +114,7 @@ public:
 				
 			lastTime += anim->GetDelay();
 			NotifyAction(*anim);
-			if (currFrame == anim->GetEndFrame()-1)
+			if (currFrame == anim->GetEndFrame())
 				if (!anim->IsForever() && ++currRep == anim->GetReps()) {
 					state = ANIMATOR_FINISHED;
 					NotifyStopped();
