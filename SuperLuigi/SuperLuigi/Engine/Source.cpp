@@ -15,6 +15,9 @@
 #include "Sprite/Clipper.h"
 #include "Physics/CollisionHander.h"
 
+#include "../Mario.h"
+#include "../MovingEntity.h"
+
 #define WIDTH	720
 #define	HEIGHT	540
 
@@ -32,6 +35,9 @@ TileLayer myTile;
 Sprite marioSprite;
 Sprite luigiSprite;
 Clipper clipper;
+
+Mario *marioPlayer;
+MovingEntity *goomba;
 
 namespace mario {
 	class App {
@@ -74,41 +80,15 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 
 
 	while (1) {
-		bool received_event = false;
-		received_event = al_get_next_event(event_queue, &ev);
-
-		if (!received_event) {	
-		}
-		else {	
-			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-				break;
-			}
-			else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-				dy += zachSteps;
-			}
-			else if (ev.keyboard.keycode == ALLEGRO_KEY_UP) {
-
-				dy -= zachSteps;
-			}
-			else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-				dx += zachSteps;
-			}
-			else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-				dx -= zachSteps;
-			}
-			marioSprite.Move(dx, dy);
-			dx = dy = 0;
-		}
-		al_flush_event_queue(event_queue);
+		marioPlayer->InputPoll();
 		
-
 		myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
 		
 		al_flip_display();
 		AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 		BitmapBlit(myTile.viewWin.bitmap, myTile.viewWin.dimensions, beforeScaleBitmap, Point(0,0));
-		marioSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
-		luigiSprite.Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+		marioPlayer->GetSelf()->Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
+		goomba->GetSelf()->Display(beforeScaleBitmap, myTile.viewWin.dimensions, clipper);
 		al_set_target_bitmap(al_get_backbuffer(display));
 		al_draw_scaled_bitmap(beforeScaleBitmap, 0, 0, WIDTH/3, HEIGHT/3, 0, 0, WIDTH, HEIGHT, 0);
 		CollisionChecker::GetSingleton().Check();
@@ -125,7 +105,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 int main() {
 	ALLEGRO_DISPLAY *display;
 
-	myTile = TileLayer("CSVMaps/mario1.csv");
+	myTile = TileLayer("CSVMaps/mario2.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -159,31 +139,13 @@ int main() {
 	AnimationFilm *walkRightFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.right");
 	FrameRangeAnimation walkRightAnimation = FrameRangeAnimation(walkRightFilm->GetId(), 1, walkRightFilm->GetTotalFrames(), 0, 0, 0, 190000);
 	
-	//Our first Sprite :D
-	marioSprite = Sprite(0, 0, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario");
-	std::function<void(Rect&, int* dx, int* dy)> gridMover = marioSprite.MakeSpriteGridLayerMover(&myGrid, &marioSprite);
-	
-	marioSprite.SetMover(gridMover);
-	marioSprite.SetRange(1, 1);
-	PrepareSpriteGravityHandler(&myGrid, &marioSprite);
-	//Clipper
 	clipper = Clipper();
 	clipper = MakeTileLayerClipper(&myTile);
 
-	//Animator
-	FrameRangeAnimator walkRightAnimator;
-	walkRightAnimator.Start(&marioSprite, &walkRightAnimation, SystemClock::Get().micro_secs());
-	
-	//Sprite 2
-	luigiSprite = Sprite(32, 32, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "luigi");
-	std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
-		s1->Move(1, 1);
-	};
+	// Sprites
+	marioPlayer = new Mario(&myGrid);
+	goomba = new MovingEntity(80, 50, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
 
-	CollisionChecker::GetSingleton().Register(&marioSprite, &luigiSprite, f);
-	marioSprite.SetBoundingArea();
-	luigiSprite.SetBoundingArea();
-	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
 	CoreLoop(display, mapTileIndexes);
 	
 	//destroyAllegroComponents --> make that a delegate

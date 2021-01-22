@@ -73,6 +73,12 @@ public:
 			frameBox = currFilm->GetFrameBox(frameNo = i);
 		}
 	}
+	void SetCurrFilm(AnimationFilm* film) {
+		this->currFilm = film;
+	}
+	AnimationFilm *GetCurrFilm() {
+		return this->currFilm;
+	}
 	byte GetFrame(void) const { return frameNo; }
 	void SetBoundingArea(const BoundingArea& area){
 		assert(!boundingArea); 

@@ -90,10 +90,6 @@ public:
 		NotifyStarted();
 	}
 	MovingAnimator(void) = default;
-
-	//void Sprite_MoveAction(Sprite* sprite, const MovingAnimation& anim) {
-	//	sprite->Move(anim.GetDx(), anim.GetDy());
-	//}
 };
 
 class FrameRangeAnimator : public Animator {
@@ -191,7 +187,6 @@ void Animator::NotifyStopped(void) {
 	AnimatorManager::GetSingleton().MarkAsSuspended(this);
 	if (onFinish)
 		(onFinish)(this);
-	std::cout << "Telos :)" << std::endl;
 }
 
 Animator::Animator(void) {
