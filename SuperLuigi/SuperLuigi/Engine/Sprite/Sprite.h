@@ -28,6 +28,9 @@ protected:
 	MotionQuantizer quantizer;
 
 public:
+	void setCurrFilm(AnimationFilm* film) {
+		currFilm = film;
+	}
 	bool directMotion = false;
 	GravityHandler gravity;
 	GravityHandler& GetGravityHandler(void)
@@ -105,8 +108,8 @@ public:
 		Rect r = GetBox();
 		if (clipper.Clip(r, dpyArea, &dpyPos, &clippedBox)) {
 			Rect clippedFrame = Rect(
-			frameBox.x + clippedBox.x,
-			frameBox.y + clippedBox.y,
+			frameBox.x - clippedBox.x,
+			frameBox.y - clippedBox.y,
 			clippedBox.w,
 			clippedBox.h
 			);

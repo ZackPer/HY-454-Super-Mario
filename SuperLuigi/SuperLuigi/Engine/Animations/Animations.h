@@ -10,6 +10,7 @@ public:
 	void				SetId(const std::string& _id) { id = _id; };
 	virtual Animation* Clone(void) const = 0;
 	Animation(const std::string& _id) : id(_id) {}
+	Animation() {}
 	virtual ~Animation() {}
 };
 
@@ -38,6 +39,8 @@ public:
 	MovingAnimation(
 		const std::string& _id, unsigned _reps, int _dx, int _dy, unsigned _delay
 	) : Animation(_id), reps(_reps), dx(_dx), dy(_dy), delay(_delay) {}
+
+	MovingAnimation() {}
 };
 
 class FrameRangeAnimation : public MovingAnimation {
@@ -59,4 +62,6 @@ public:
 		unsigned start, unsigned end,
 		unsigned reps, int dx, int dy, int delay
 	) : start(start), end(end), MovingAnimation(id, reps, dx, dy, delay) {}
+
+	FrameRangeAnimation() {}
 };
