@@ -16,11 +16,11 @@ public:
 	MovingEntity(int x, int y, AnimationFilm *film, std::string type, GridLayer *myGrid)
 		: SpriteEntity(x, y, film, type)
 	{
+		this->myGrid = myGrid;
 		InitGravity(myGrid);
 
-		animation = new FrameRangeAnimation(self->GetCurrFilm()->GetId(), 0, 2, 0, 0, 0, 500000);
-		animator = new FrameRangeAnimator();
-		animator->Start(self, animation, SystemClock::Get().micro_secs());
+		animation = FrameRangeAnimation(self->GetCurrFilm()->GetId(), 0, 2, 0, 0, 0, 500000);
+		animator.Start(self, &animation, SystemClock::Get().micro_secs());
 
 		movement = MovementAI(self, 1);
 		movement.SetEdgeDetection(true);
@@ -28,10 +28,16 @@ public:
 		self->Move(0, 0);
 	}
 
+	SpriteEntity *Clone(int x, int y) {
+		MovingEntity *clone = new MovingEntity(x, y, self->GetCurrFilm(), self->GetTypeId(), myGrid);
+		return clone;
+	}
+
 protected:
 	MovementAI			movement;
-	FrameRangeAnimation *animation;
-	FrameRangeAnimator	*animator;
+	FrameRangeAnimation animation;
+	FrameRangeAnimator	animator;
+	GridLayer			*myGrid;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);

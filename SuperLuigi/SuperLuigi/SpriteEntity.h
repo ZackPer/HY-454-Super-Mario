@@ -36,7 +36,6 @@ public:
 				OnStopFalling();
 			}
 		);
-		
 	}
 
 	// Util Functions
@@ -44,15 +43,17 @@ public:
 		return self;
 	}
 
+	// Each derived class must give an implementation when it copies it self
+	virtual SpriteEntity *Clone(int x, int y) = 0;
+
 protected:
 	std::string		id;
 	Sprite			*self;
 	int				speed = 2;
 	GravityModule	gravityModule;
 
+
 	// Callback functions for class customization
 	virtual void OnStartFalling() = 0;
 	virtual void OnStopFalling() = 0;
-
-private:
 };

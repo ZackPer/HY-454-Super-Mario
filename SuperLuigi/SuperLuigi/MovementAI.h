@@ -20,6 +20,7 @@ public:
 	// Initialize mover and animator
 	void Init(GridLayer *myGrid) {
 		PrepareEdgeDetectionMover(myGrid);
+		self->SetRange(1, 1);
 		movingAnimator->SetOnAction(
 			[=](Animator *animator, const Animation& animation) {
 				int dx = speed * sign;

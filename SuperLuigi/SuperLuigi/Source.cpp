@@ -18,6 +18,8 @@
 #include "./CameraMover.h"
 #include "./Mario.h"
 #include "./MovingEntity.h"
+#include "./EntitySpawner.h"
+
 
 #define WIDTH	720
 #define	HEIGHT	540
@@ -30,13 +32,15 @@ const Clipper MakeTileLayerClipper(TileLayer* layer) {
 }
 
 AnimationFilm littleshit;
-GridLayer myGrid;
 TileLayer myTile;
+GridLayer myGrid;
+
 CameraMover cameraMover;
 Sprite marioSprite;
 Sprite luigiSprite;
 Clipper clipper;
 Rect cameraCoords;
+EntitySpawner *entitySpawner;
 
 Mario *supermario;
 MovingEntity *goomba;
@@ -80,10 +84,12 @@ void initializeAnimationsAndSprites() {
 	clipper = MakeTileLayerClipper(&myTile);
 	
 	//Mario
-	supermario = new Mario(&myGrid, &(myTile.viewWin.dimensions));
+	supermario = new Mario(0, 0, &myGrid, &(myTile.viewWin.dimensions));
+	supermario->GetSelf()->SetVisibility(false);
 
 	//Goomba
 	goomba = new MovingEntity(50, 50, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
+	goomba->GetSelf()->SetVisibility(false);
 
 	std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
 		//s1->Move(1, 1);
@@ -94,8 +100,6 @@ void initializeAnimationsAndSprites() {
 
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), startPosX);
 }
-
-
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* marioHandler) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
@@ -141,8 +145,12 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 			dy = supermario->GetSelf()->GetBox().y - startPosY;
 			cameraMover.ScrollAccordingToCharacter(dx, dy);
 			BitmapBlit(myTile.viewWin.bitmap, Rect( 0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));			
-			supermario->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
-			goomba->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
+
+			//Display all sprites that are visible:
+			auto list = SpriteManager::GetSingleton().GetDisplayList();
+			for (auto &it : list)
+				if (it->IsVisible())
+					it->Display(beforeScaleBitmap, cameraCoords, clipper);
 
 			al_set_target_bitmap(al_get_backbuffer(display));
 			al_draw_scaled_bitmap(beforeScaleBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, 0, 0, WIDTH, HEIGHT, 0);
@@ -157,9 +165,29 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 	};
 }
 
+void InitEntitySpawner() {	
+	EntitySpawner::Get().Add(EntitySpawner::GOOMBA, goomba);
+	EntitySpawner::Get().Add(EntitySpawner::MARIO, supermario);
+
+	TileLayer spawnPointsTiles = TileLayer("repo/SuperLuigi/SuperLuigi/CSVMaps/map1_enemies.csv");
+	TileMap spawnPoints = spawnPointsTiles.TileMapIndexes;
+	
+	for (int i = 0; i < spawnPoints.size(); i++) {
+		for (int j = 0; j < spawnPoints[0].size(); j++) {
+			Dim col = TileX3(spawnPoints[i][j]) / TILE_WIDTH;
+			Dim row = TileY3(spawnPoints[i][j]) / TILE_HEIGHT;
+			int index = row * 19 + col;
+			spawnPoints[i][j] = index;
+		}
+	}
+
+	EntitySpawner::Get().ParseSpawnPoints(spawnPoints);
+	EntitySpawner::Get().SpawnSprites();
+}
+
 int main() {
 	ALLEGRO_DISPLAY *display;
-	myTile = TileLayer("repo/SuperLuigi/SuperLuigi/CSVMaps/mario2.csv");
+	myTile = TileLayer("repo/SuperLuigi/SuperLuigi/CSVMaps/map1.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -197,6 +225,10 @@ int main() {
 
 	initializeAnimationsAndSprites();	
 	MarioMover marioHandler(supermario->GetSelf());
+
+	// Parses and spawns all entities.
+	InitEntitySpawner();
+
 	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
 	CoreLoop(display, mapTileIndexes, &marioHandler);
 	

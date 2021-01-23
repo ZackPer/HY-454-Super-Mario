@@ -12,9 +12,12 @@
 class Mario : public SpriteEntity {
 public:
 	Mario() = default;
-	Mario(GridLayer *myGrid, Rect *viewWindow) 
-		: SpriteEntity(0, 0, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
+	Mario(int x, int y, GridLayer *myGrid, Rect *viewWindow) 
+		: SpriteEntity(x, y, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
 	{	
+		this->myGrid = myGrid;
+		this->viewWindow = viewWindow;
+
 		//My module Initialization
 		jumpModule = JumpModule(self);
 		jumpModule.SetIsFalling(gravityModule.GetIsFallingRef());
@@ -22,6 +25,7 @@ public:
 
 		// Super's Initializations
 		PrepareMoverWithViewWindowCheck(myGrid, viewWindow);
+		self->SetRange(1, 1);
 		InitGravity(myGrid);
 		self->Move(0, 0); //This is to calculate gravity at least once.
 	}
@@ -85,7 +89,14 @@ public:
 
 	}
 
+	SpriteEntity *Clone(int x, int y) {
+		Mario *clone = new Mario(x, y, myGrid, viewWindow);
+		return clone;
+	}
+
 protected:
+	GridLayer		*myGrid;
+	Rect			*viewWindow;
 	JumpModule		jumpModule;
 	int				dx;
 	int				dy;
