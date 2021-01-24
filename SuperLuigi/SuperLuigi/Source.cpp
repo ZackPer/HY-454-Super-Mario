@@ -18,6 +18,7 @@
 #include "./CameraMover.h"
 #include "./Mario.h"
 #include "./MovingEntity.h"
+#include "BlockTile.h"
 
 #define WIDTH	720
 #define	HEIGHT	540
@@ -40,6 +41,7 @@ Rect cameraCoords;
 
 Mario *supermario;
 MovingEntity *goomba;
+MysteryTile* mtile1;
 
 namespace mario {
 	class App {
@@ -85,21 +87,28 @@ void initializeAnimationsAndSprites() {
 	//Goomba
 	goomba = new MovingEntity(50, 50, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
 
+	//MysteryTile
+	mtile1 = new MysteryTile(&myGrid);
+
 	std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
-		//s1->Move(1, 1);
+		std::cout << "Bumped";
 	};
 	
 	//Collisions
-	//CollisionChecker::GetSingleton().Register(&marioSprite, &luigiSprite, f);
+	CollisionChecker::GetSingleton().Register(
+		supermario->GetSelf(),
+		&(mtile1->GetSprite()),
+		mtile1->GetOnCollison()
+	);
 
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), startPosX);
 }
 
 
 
-void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* marioHandler) {
+void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
-
+	
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60);
 
 	event_queue = al_create_event_queue();
@@ -107,7 +116,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
 
 	int dx = 0, dy = 0;
-	bool draw = true, isRunning = false, super = false;
+	bool draw = true;
 	Direction direction = NO;
 
 	ALLEGRO_BITMAP* beforeScaleBitmap = al_create_bitmap(WIDTH, HEIGHT);
@@ -117,17 +126,16 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
 		if (ev.type == ALLEGRO_EVENT_TIMER) {
-			//before all the movements
+			//calculate starting position
 			startPosX = supermario->GetSelf()->GetBox().x;
-			startPosY = supermario->GetSelf()->GetBox().y;
-
-			supermario->InputPoll(direction, isRunning, super);
+			startPosY = supermario->GetSelf()->GetBox().y;	
+			//get Input
+			supermario->InputPoll();
 			//movements
-			marioHandler->Move(direction, isRunning, super);
-
+			supermario->GetselfMover()->Move(supermario->direction, supermario->isRunning, supermario->isSuper, supermario->looking);
 			//reset variables
-			isRunning = false;
-			direction = NO;
+			supermario->isRunning = false;
+			supermario->direction = NO;
 			draw = true;
 		}		
 		if (draw == true) {		
@@ -135,12 +143,17 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 			al_flip_display();
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 			myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
-
-			//after all the movements
+			//calculate ending position
 			dx = supermario->GetSelf()->GetBox().x - startPosX;
 			dy = supermario->GetSelf()->GetBox().y - startPosY;
+			
+			//move camera
 			cameraMover.ScrollAccordingToCharacter(dx, dy);
+
 			BitmapBlit(myTile.viewWin.bitmap, Rect( 0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));			
+			
+			//display sprites
+			mtile1->GetSprite().Display(beforeScaleBitmap, cameraCoords, clipper);
 			supermario->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
 			goomba->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
 
@@ -159,7 +172,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes, MarioMover* mari
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-	myTile = TileLayer("repo/SuperLuigi/SuperLuigi/CSVMaps/mario2.csv");
+	myTile = TileLayer("CSVMaps/mario2.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -196,9 +209,8 @@ int main() {
 	);
 
 	initializeAnimationsAndSprites();	
-	MarioMover marioHandler(supermario->GetSelf());
 	//The Original Super Mario Bros Game Loop (but we call it CoreLoop.)
-	CoreLoop(display, mapTileIndexes, &marioHandler);
+	CoreLoop(display, mapTileIndexes);
 	
 	//destroyAllegroComponents --> make that a delegate
 	[=](){

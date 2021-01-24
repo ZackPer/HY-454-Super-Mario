@@ -12,6 +12,7 @@ public:
 	SpriteEntity(int x, int y, AnimationFilm *film, std::string typeId) {
 		self = new Sprite(x, y, film, typeId);
 		self->SetBoundingArea();
+		self->SetRange(1, 1);
 	}
 
 	// Sets self mover to be the default mover.

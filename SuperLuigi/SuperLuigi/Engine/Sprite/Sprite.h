@@ -62,7 +62,7 @@ public:
 	void SetRange(int x, int y) {
 		quantizer = quantizer.SetRange(x, y);
 	}
-	const Rect& GetBox(void) const
+	const Rect GetBox(void) const
 	{
 		return Rect(x, y, frameBox.w, frameBox.h);
 	}

@@ -26,6 +26,7 @@ public:
 		movement.SetEdgeDetection(true);
 		movement.Init(myGrid);
 		self->Move(0, 0);
+		self->SetBoundingArea();
 	}
 
 protected:

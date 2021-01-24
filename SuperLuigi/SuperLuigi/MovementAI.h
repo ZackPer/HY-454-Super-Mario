@@ -32,7 +32,6 @@ public:
 				}
 			}
 		);
-
 		movingAnimator->Start(movingAnimation, SystemClock::Get().micro_secs());
 	}
 
