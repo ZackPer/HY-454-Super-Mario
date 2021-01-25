@@ -41,7 +41,8 @@ Rect cameraCoords;
 
 Mario *supermario;
 MovingEntity *goomba;
-MysteryTile* mtile1;
+MysteryTile* mysteryTileMushroom;
+BrickTile* bricktile;
 
 namespace mario {
 	class App {
@@ -88,7 +89,8 @@ void initializeAnimationsAndSprites() {
 	goomba = new MovingEntity(50, 50, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
 
 	//MysteryTile
-	mtile1 = new MysteryTile(&myGrid);
+	mysteryTileMushroom = new MysteryTile(&myGrid, "mushroom");
+	bricktile = new BrickTile(&myGrid);
 
 	std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
 		std::cout << "Bumped";
@@ -97,8 +99,14 @@ void initializeAnimationsAndSprites() {
 	//Collisions
 	CollisionChecker::GetSingleton().Register(
 		supermario->GetSelf(),
-		&(mtile1->GetSprite()),
-		mtile1->GetOnCollison()
+		&(mysteryTileMushroom->GetSprite()),
+		mysteryTileMushroom->GetOnCollison()
+	);
+
+	CollisionChecker::GetSingleton().Register(
+		supermario->GetSelf(),
+		&(bricktile->GetSprite()),
+		bricktile->GetOnCollison()
 	);
 
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), startPosX);
@@ -108,6 +116,7 @@ void initializeAnimationsAndSprites() {
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	ALLEGRO_EVENT_QUEUE *event_queue = nullptr;
+	
 	
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60);
 
@@ -153,9 +162,13 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			BitmapBlit(myTile.viewWin.bitmap, Rect( 0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));			
 			
 			//display sprites
-			mtile1->GetSprite().Display(beforeScaleBitmap, cameraCoords, clipper);
+			bricktile->GetSprite().Display(beforeScaleBitmap, cameraCoords, clipper);
+			if (mysteryTileMushroom->GetcontainedSprite())
+				mysteryTileMushroom->GetcontainedSprite()->Display(beforeScaleBitmap, cameraCoords, clipper);
+			mysteryTileMushroom->GetSprite().Display(beforeScaleBitmap, cameraCoords, clipper);
 			supermario->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
 			goomba->GetSelf()->Display(beforeScaleBitmap, cameraCoords, clipper);
+			
 
 			al_set_target_bitmap(al_get_backbuffer(display));
 			al_draw_scaled_bitmap(beforeScaleBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, 0, 0, WIDTH, HEIGHT, 0);
