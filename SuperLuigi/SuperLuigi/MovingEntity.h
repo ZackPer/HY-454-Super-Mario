@@ -18,14 +18,41 @@ public:
 	{
 		this->myGrid = myGrid;
 		InitGravity(myGrid);
+	}
+	
+	void SetWalkLeft(FrameRangeAnimation animation) {
+		this->walkLeft = animation;
+	}
+	void SetWalkRight(FrameRangeAnimation animation) {
+		this->walkRight = animation;
+	}
+	void SetDeath(FrameRangeAnimation animation) {
+		this->death = animation;
+	}
 
-		animation = FrameRangeAnimation(self->GetCurrFilm()->GetId(), 0, 2, 0, 0, 0, 500000);
-		animator.Start(self, &animation, SystemClock::Get().micro_secs());
-
+	void Start() {
 		movement = MovementAI(self, 1);
 		movement.SetEdgeDetection(true);
 		movement.Init(myGrid);
 		self->Move(0, 0);
+		movement.SetOnSignChange(
+			[=](int sign) {
+				animator.Stop();
+				if (sign == 1) {
+					auto film = AnimationFilmHolder::Get().GetFilm(walkRight.GetId());
+					GetSelf()->SetCurrFilm(film);
+					animator.Start(self, &walkRight, SystemClock::Get().micro_secs());
+				}
+				else if (sign == -1) {
+					auto film = AnimationFilmHolder::Get().GetFilm(walkLeft.GetId());
+					GetSelf()->SetCurrFilm(film);
+					animator.Start(self, &walkLeft, SystemClock::Get().micro_secs());
+				}
+				else
+					assert(0);
+			}
+		);
+		animator.Start(self, &walkRight, SystemClock::Get().micro_secs());
 	}
 
 	SpriteEntity *Clone(int x, int y) {
@@ -35,7 +62,9 @@ public:
 
 protected:
 	MovementAI			movement;
-	FrameRangeAnimation animation;
+	FrameRangeAnimation walkLeft;
+	FrameRangeAnimation walkRight;
+	FrameRangeAnimation death;
 	FrameRangeAnimator	animator;
 	GridLayer			*myGrid;
 

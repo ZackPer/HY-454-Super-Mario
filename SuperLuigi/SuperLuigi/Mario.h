@@ -4,13 +4,16 @@
 #include "Engine/Animations/Animators.h"
 #include "Engine/SystemClock.h"
 #include "Engine/Grid/Grid.h"
-
 #include "Modules/GravityModule.h"
 #include "Modules/JumpModule.h"
 #include "SpriteEntity.h"
-
+#include "Powerups.h"
 class Mario : public SpriteEntity {
 public:
+	bool isSuper = false;
+	bool isRunning = false;
+	Direction direction = NO, looking = RIGHT;
+
 	Mario() = default;
 	Mario(int x, int y, GridLayer *myGrid, Rect *viewWindow) 
 		: SpriteEntity(x, y, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
@@ -28,15 +31,20 @@ public:
 		self->SetRange(1, 1);
 		InitGravity(myGrid);
 		self->Move(0, 0); //This is to calculate gravity at least once.
+		selfMover = new MarioMover(self);
+		growerAndShrinker = new GrowerAndShrinker(self);
 	}
 
-	void InputPoll(Direction& direction, bool& isRunning, bool& super) {
+	void InputPoll() {
 		uint64_t currentTime = SystemClock::Get().micro_secs();
 		if (currentTime - inputDelay > lastInput) {
 			lastInput = currentTime;
 			ALLEGRO_KEYBOARD_STATE keyState;
 			al_get_keyboard_state(&keyState);
 			
+			auto asd = !gravityModule.GetIsFalling();
+			auto asdasd = !jumpModule.IsJumping();
+
 			if (al_key_down(&keyState, ALLEGRO_KEY_UP) &&
 				!gravityModule.GetIsFalling() &&
 				!jumpModule.IsJumping())
@@ -65,10 +73,10 @@ public:
 				isRunning = true;
 			}
 			if (al_key_down(&keyState, ALLEGRO_KEY_1)) {
-				super = true;
+				ChangeSuper(true, looking);
 			}
 			if (al_key_down(&keyState, ALLEGRO_KEY_2)) {
-				super = false;
+				ChangeSuper(false, looking);
 			}
 		}
 	}
@@ -94,14 +102,55 @@ public:
 		return clone;
 	}
 
+	void ChangeSuper(bool b, Direction looking) {
+		if (b != isSuper) {
+			isSuper = b;
+			if (isSuper) {
+				selfMover->SetWalkFilms(
+					AnimationFilmHolder::Get().GetFilm("supermario.walk.right"),
+					AnimationFilmHolder::Get().GetFilm("supermario.walk.left")
+				);
+				self->SetPos(self->GetBox().x, self->GetBox().y - 16);
+			}
+			else {
+				selfMover->SetWalkFilms(
+					AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"),
+					AnimationFilmHolder::Get().GetFilm("littlemario.walk.left")
+				);
+				self->SetPos(self->GetBox().x, self->GetBox().y + 16);
+			}
+
+			if (looking == RIGHT)
+				self->setCurrFilm(selfMover->GetwalkRightFilm());
+			else if (looking == LEFT)
+				self->setCurrFilm(selfMover->GetwalkLeftFilm());
+			self->SetFrame(1);
+			self->SetFrame(0);
+		}
+	}
+
+	bool GetSuper() {
+		return isSuper;
+	}
+
+	void SetisSuper(bool b) {
+		isSuper = b;
+	}
+
+	MarioMover* GetselfMover(){
+		return selfMover;
+	}
+
 protected:
-	GridLayer		*myGrid;
-	Rect			*viewWindow;
-	JumpModule		jumpModule;
-	int				dx;
-	int				dy;
-	uint64_t		lastInput = 0;
-	uint64_t		inputDelay = 8000;
+	GridLayer			*myGrid;
+	Rect				*viewWindow;
+	JumpModule			jumpModule;
+	int					dx;
+	int					dy;
+	uint64_t			lastInput = 0;
+	uint64_t			inputDelay = 8000;
+	MarioMover*			selfMover;
+	GrowerAndShrinker*	growerAndShrinker;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);
@@ -111,6 +160,9 @@ protected:
 		gravityModule.SetIsFalling(false);
 		gravityModule.StopFalling();
 		jumpModule.Reset();
+	}
+	void StopMovingAnimations() {
+
 	}
 
 };

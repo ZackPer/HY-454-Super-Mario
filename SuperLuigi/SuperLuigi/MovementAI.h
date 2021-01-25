@@ -9,6 +9,8 @@
 
 class MovementAI {
 public:
+	using OnSignChange = std::function<void(int)>;
+
 	MovementAI() = default;
 	MovementAI(Sprite *self, int speed) {
 		this->self = self;
@@ -30,10 +32,10 @@ public:
 				self->Move(speed * sign, 0);
 				if (lastPos == self->GetBox()) { //That means it hit a wall
 					sign *= -1;
+					NotifyChange(sign);
 				}
 			}
 		);
-
 		movingAnimator->Start(movingAnimation, SystemClock::Get().micro_secs());
 	}
 
@@ -51,7 +53,7 @@ public:
 			if (edgeDetection == true) {
 				Rect edgeDetectionBox = box;
 				int dummyY = 0;
-				edgeDetectionBox.y += 16;
+				edgeDetectionBox.y += box.h;
 				myGrid->FilterGridMotion(reverseGridTileStatus, edgeDetectionBox, *dx, dummyY);
 			}
 
@@ -63,14 +65,25 @@ public:
 	void SetEdgeDetection(bool edgeDetection) {
 		this->edgeDetection = edgeDetection;
 	}
+	
+	void SetOnSignChange(OnSignChange callback) {
+		notifyChange = callback;
+	}
 
 private:
 	Sprite				*self;
 	MovingAnimation		*movingAnimation;
 	MovingAnimator		*movingAnimator;
+	OnSignChange		notifyChange;
 	Rect				lastPos;
 	bool				edgeDetection = false;
 	int					sign = 1;
 	int					speed = 1;
 	std::vector<std::vector<int>> reverseGridTileStatus;
+
+
+	void NotifyChange(int sign) {
+		if (notifyChange)
+			notifyChange(sign);
+	}
 };

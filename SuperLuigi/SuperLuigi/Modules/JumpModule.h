@@ -35,7 +35,10 @@ public:
 			[=](Animator *animator, const Animation& animation) {
 				int dh = physics.FindCurrentOffset(SystemClock::Get().micro_secs());	
 				if (dh + (self->GetBox().y - startPos) > 0) {
+					Rect previousPos = self->GetBox();
 					self->Move(0, -(dh + (self->GetBox().y - startPos)));
+					if (self->GetBox().y == previousPos.y)
+						animator->Stop();
 				}
 			}
 		);

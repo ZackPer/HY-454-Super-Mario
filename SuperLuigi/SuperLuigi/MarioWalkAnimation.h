@@ -42,7 +42,6 @@ class MarioMover {
 	float acceleration = 1;
 	bool super = false;
 public:
-	
 	MarioMover() {}
 
 	MarioMover(Sprite* s) {
@@ -129,12 +128,6 @@ public:
 			}
 		);
 
-		RemainingMoveFramesAnimator.SetOnFinish(
-			[=](Animator *) {
-
-			}
-		);
-
 		RemainingMoveLeftFrameAnimation = FrameRangeAnimation(
 			walkLeftFilm->GetId(),
 			0,
@@ -158,23 +151,19 @@ public:
 		
 	}
 
-	void SetSuper(bool b) {		
-		if (b != super) {
-			super = b;
-			if (super) {
-				walkRightFilm = AnimationFilmHolder::Get().GetFilm("supermario.walk.right");
-				walkLeftFilm = AnimationFilmHolder::Get().GetFilm("supermario.walk.left");
-			}
-			else {
-				walkRightFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.right");
-				walkLeftFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.left");
-			}
+	void SetWalkFilms(AnimationFilm* right, AnimationFilm* left) {
+		if(right)
+			walkRightFilm = right;
+		if(left)
+			walkLeftFilm  = left;
+	}
 
-			mario->setCurrFilm(walkRightFilm);
-			mario->SetFrame(1);
-			mario->SetFrame(0);
-		}
-		
+	AnimationFilm* GetwalkRightFilm() const {
+		return walkRightFilm;
+	}
+
+	AnimationFilm* GetwalkLeftFilm() const {
+		return walkRightFilm;
 	}
 
 	void ApplyAcceleration(bool isRunning) {
@@ -186,8 +175,7 @@ public:
 			acceleration = 1;
 	}
 
-	void Move(Direction dir, bool isRunning, bool super) {
-		SetSuper(super);
+	void Move(Direction dir, bool isRunning, bool super, Direction& looking) {
 		ApplyAcceleration(isRunning);
 		switch (dir) {
 		case RIGHT:
@@ -199,6 +187,7 @@ public:
 				FramesAnimator.Start(mario, &RightWalkFramesAnimation, SystemClock::Get().micro_secs());
 			}
 			state = MOVING_RIGHT;
+			looking = RIGHT;
 			break;
 		case LEFT:
 			//stop all other animations
@@ -209,6 +198,7 @@ public:
 				FramesAnimator.Start(mario, &LeftWalkFramesAnimation, SystemClock::Get().micro_secs());
 			}
 			state = MOVING_LEFT;
+			looking = LEFT;
 			break;
 		default:
 			if (state == MOVING_RIGHT && isRunning) {
