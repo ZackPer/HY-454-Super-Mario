@@ -50,7 +50,7 @@ public:
 
 	void PrepareAccelarationPhysics(uint64_t currTime) {
 		Uo = 0;
-		a = 300;
+		a = 500;
 		direction = POSITIVE;
 		startTime = currTime;
 		endTime = -1;

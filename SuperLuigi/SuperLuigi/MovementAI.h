@@ -36,7 +36,14 @@ public:
 				}
 			}
 		);
+	}
+
+	void Start() {
 		movingAnimator->Start(movingAnimation, SystemClock::Get().micro_secs());
+	}
+	
+	void Stop() {
+		movingAnimator->Stop();
 	}
 
 	void PrepareEdgeDetectionMover(GridLayer *myGrid) {

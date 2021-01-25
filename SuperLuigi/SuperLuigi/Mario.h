@@ -97,9 +97,8 @@ public:
 
 	}
 
-	SpriteEntity *Clone(int x, int y) {
-		Mario *clone = new Mario(x, y, myGrid, viewWindow);
-		return clone;
+	void Bounce() {
+		
 	}
 
 	void ChangeSuper(bool b, Direction looking) {

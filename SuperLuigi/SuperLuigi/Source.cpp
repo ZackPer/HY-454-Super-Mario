@@ -76,69 +76,93 @@ namespace mario {
 TileLayer a;
 int startPosX = 0, startPosY = 0;
 
-void initializeAnimationsAndSprites() {
-	//Initialize AnimationFilms
-	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
-	
-	//Clipper
-	clipper = Clipper();
-	clipper = MakeTileLayerClipper(&myTile);
-}
 
 void InitPrimitiveCallbacks() {
 	EntitySpawner::Get().Add(
+		196,
+		[=](int x, int y) -> SpriteEntity * {
+		supermario = new Mario(x, y - 1, &myGrid, &(myTile.viewWin.dimensions));
+		supermario->GetSelf()->SetVisibility(true);
+		return supermario;
+	}
+	);
+
+	EntitySpawner::Get().Add(
 		200,
 		[=](int x, int y) -> SpriteEntity * {
-			//Goomba
-			FrameRangeAnimation walk = FrameRangeAnimation("goomba.walk", 0, 2, 0, 0, 0, 300000);
-			//Todo add animation  for death
-			MovingEntity *goomba = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
-			goomba->SetWalkLeft(walk);
-			goomba->SetWalkRight(walk);
-			goomba->Start();
-			goomba->GetSelf()->SetVisibility(true);
-			return goomba;
-		}
+		//Goomba
+		MovingEntity *goomba = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
+		FrameRangeAnimation walk = FrameRangeAnimation("goomba.walk", 0, 2, 0, 0, 0, 300000);
+		FrameRangeAnimation *death = new FrameRangeAnimation("goomba.death", 0, 1, 1, 0, 0, 400000);
+		goomba->SetWalkLeft(walk);
+		goomba->SetWalkRight(walk);
+		goomba->SetOnDeath(
+			Prepare_MovingEntityOnDeath(goomba, death)
+		);
+		goomba->StartMoving();
+		goomba->SetEdgeDetection(false);
+
+		std::function<void(Sprite *s1, Sprite *s2)> f = [goomba](Sprite *s1, Sprite *s2) {
+			Rect marioBox = s1->GetBox();
+			Rect goombaBox = s2->GetBox();
+			if (marioBox.y + marioBox.h < goombaBox.y + 5) {
+				goomba->Die();
+				supermario->Bounce();
+			}
+			else {
+				supermario->Die();
+			}
+		};
+		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), goomba->GetSelf(), f);
+
+		return goomba;
+	}
 	);
 	EntitySpawner::Get().Add(
 		201,
 		[=](int x, int y) -> SpriteEntity * {
-			//Green Koopa
-			FrameRangeAnimation walkLeft = FrameRangeAnimation("green.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
-			FrameRangeAnimation walkRight = FrameRangeAnimation("green.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
-			//Todo add animation  for death
-			MovingEntity *greenKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("green.koopa.walk.right"), "greek.koopa", &myGrid);
-			greenKoopa->SetWalkLeft(walkLeft);
-			greenKoopa->SetWalkRight(walkRight);
-			greenKoopa->Start();
-			greenKoopa->GetSelf()->SetVisibility(true);
-			return greenKoopa;
-		}
+		//Green Koopa
+		FrameRangeAnimation walkLeft = FrameRangeAnimation("green.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
+		FrameRangeAnimation walkRight = FrameRangeAnimation("green.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
+		//Todo add animation  for death
+		MovingEntity *greenKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("green.koopa.walk.right"), "greek.koopa", &myGrid);
+		greenKoopa->SetWalkLeft(walkLeft);
+		greenKoopa->SetWalkRight(walkRight);
+		greenKoopa->StartMoving();
+		greenKoopa->SetEdgeDetection(false);
+		greenKoopa->GetSelf()->SetVisibility(true);
+		return greenKoopa;
+	}
 	);
 	EntitySpawner::Get().Add(
 		220,
 		[=](int x, int y) -> SpriteEntity * {
-			//Green Koopa
-			FrameRangeAnimation walkLeft = FrameRangeAnimation("red.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
-			FrameRangeAnimation walkRight = FrameRangeAnimation("red.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
-			//Todo add animation  for death
-			MovingEntity *redKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("red.koopa.walk.right"), "red.koopa", &myGrid);
-			redKoopa->SetWalkLeft(walkLeft);
-			redKoopa->SetWalkRight(walkRight);
-			redKoopa->Start();
-			redKoopa->GetSelf()->SetVisibility(true);
-			return redKoopa;
-		}
+		//Green Koopa
+		FrameRangeAnimation walkLeft = FrameRangeAnimation("red.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
+		FrameRangeAnimation walkRight = FrameRangeAnimation("red.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
+		//Todo add animation  for death
+		MovingEntity *redKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("red.koopa.walk.right"), "red.koopa", &myGrid);
+		redKoopa->SetWalkLeft(walkLeft);
+		redKoopa->SetWalkRight(walkRight);
+		redKoopa->StartMoving();
+		redKoopa->SetEdgeDetection(true);
+		redKoopa->GetSelf()->SetVisibility(true);
+		return redKoopa;
+	}
 	);
+}
 
-	EntitySpawner::Get().Add(
-		196,
-		[=](int x, int y) -> SpriteEntity * {
-			supermario = new Mario(x, y - 1, &myGrid, &(myTile.viewWin.dimensions));
-			supermario->GetSelf()->SetVisibility(true);
-			return supermario;
-		}
-	);
+void initializeAnimationsAndSprites() {
+	//Initialize AnimationFilms
+	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
+	
+	// Parses and spawns all entities.
+	InitPrimitiveCallbacks();
+	EntitySpawner::Get().ParseAndReplaceSpawnPoints(myTile, myGrid);
+
+	//Clipper
+	clipper = Clipper();
+	clipper = MakeTileLayerClipper(&myTile);
 }
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
@@ -245,11 +269,6 @@ int main() {
 
 	initializeAnimationsAndSprites();	
 	
-	// Parses and spawns all entities.
-	InitPrimitiveCallbacks();
-	EntitySpawner::Get().ParseAndReplaceSpawnPoints(myTile, myGrid);
-
-
 	//mapping map indexes to tilesetIndexes
 	TileMap mapTileIndexes;
 	myTile.getMapIndexes(mapTileIndexes, myTile.TileMapIndexes);

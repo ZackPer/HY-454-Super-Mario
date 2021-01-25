@@ -29,7 +29,6 @@ protected:
 	}
 
 public:
-
 	void Register(Sprite* s1, Sprite* s2, const Action& f)
 	{
 		assert(!IsInEntries(s1, s2));
