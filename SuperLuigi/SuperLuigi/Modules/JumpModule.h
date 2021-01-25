@@ -35,13 +35,20 @@ public:
 			[=](Animator *animator, const Animation& animation) {
 				int dh = physics.FindCurrentOffset(SystemClock::Get().micro_secs());	
 				if (dh + (self->GetBox().y - startPos) > 0) {
+					Rect previousPos = self->GetBox();
 					self->Move(0, -(dh + (self->GetBox().y - startPos)));
+					if (self->GetBox().y == previousPos.y) {
+						animator->Stop();
+						isStopped = true;
+					}
 				}
 			}
 		);
 		jumpAnimator->SetOnFinish(
 			[=](Animator *animator) {
 				self->gravity.SetGravityAddicted(true);
+				std::cout << "Jump animator finish!\n";
+				isBouncing = false;
 			}
 		);
 	}
@@ -89,15 +96,18 @@ private:
 	Sprite				*self;
 	MovingAnimation		*animation;
 	MovingAnimator		*jumpAnimator;
+	FrameRangeAnimation *jumpFrameAnimation;
+	FrameRangeAnimator  *jumpFrameAnimator;
 	bool				*isFalling;
 	bool				isJumping = false;
 	bool				isStopped = false;
+	bool				isBouncing = false;
 	int					height = 80;
 	int					animRepeats;
 	int					startPos;
 	uint64_t			animDelay = 5000;
-	uint64_t			jumpDuration = (float)pow(10, 6) * 0.7;
-	uint64_t			forceStopDuration = pow(10, 6) * 0.3;
+	uint64_t			jumpDuration = (float)pow(10, 6) * 0.6;
+	uint64_t			forceStopDuration = pow(10, 6) * 0.2;
 	AccelaratedMovement physics;
 
 	// For each kind of jump, prepare physics and animation delays.

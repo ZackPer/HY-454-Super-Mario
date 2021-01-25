@@ -15,9 +15,12 @@ public:
 	Direction direction = NO, looking = RIGHT;
 
 	Mario() = default;
-	Mario(GridLayer *myGrid, Rect *viewWindow) 
-		: SpriteEntity(0, 0, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
+	Mario(int x, int y, GridLayer *myGrid, Rect *viewWindow) 
+		: SpriteEntity(x, y, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
 	{	
+		this->myGrid = myGrid;
+		this->viewWindow = viewWindow;
+
 		//My module Initialization
 		jumpModule = JumpModule(self);
 		jumpModule.SetIsFalling(gravityModule.GetIsFallingRef());
@@ -25,6 +28,7 @@ public:
 
 		// Super's Initializations
 		PrepareMoverWithViewWindowCheck(myGrid, viewWindow);
+		self->SetRange(1, 1);
 		InitGravity(myGrid);
 		self->Move(0, 0); //This is to calculate gravity at least once.
 		selfMover = new MarioMover(self);
@@ -38,6 +42,9 @@ public:
 			ALLEGRO_KEYBOARD_STATE keyState;
 			al_get_keyboard_state(&keyState);
 			
+			auto asd = !gravityModule.GetIsFalling();
+			auto asdasd = !jumpModule.IsJumping();
+
 			if (al_key_down(&keyState, ALLEGRO_KEY_UP) &&
 				!gravityModule.GetIsFalling() &&
 				!jumpModule.IsJumping())
@@ -90,6 +97,10 @@ public:
 
 	}
 
+	void Bounce() {
+		
+	}
+
 	void ChangeSuper(bool b, Direction looking) {
 		if (b != isSuper) {
 			isSuper = b;
@@ -130,6 +141,8 @@ public:
 	}
 
 protected:
+	GridLayer			*myGrid;
+	Rect				*viewWindow;
 	JumpModule			jumpModule;
 	int					dx;
 	int					dy;
@@ -137,7 +150,6 @@ protected:
 	uint64_t			inputDelay = 8000;
 	MarioMover*			selfMover;
 	GrowerAndShrinker*	growerAndShrinker;
-
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);
@@ -148,7 +160,6 @@ protected:
 		gravityModule.StopFalling();
 		jumpModule.Reset();
 	}
-
 	void StopMovingAnimations() {
 
 	}

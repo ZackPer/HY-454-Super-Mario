@@ -9,7 +9,9 @@ public:
 	const std::string& GetId(void) { return id; }
 	void				SetId(const std::string& _id) { id = _id; };
 	virtual Animation* Clone(void) const = 0;
-	Animation(const std::string& _id) : id(_id) {}
+	Animation(const std::string& _id) : id(_id) {
+		int a = 10;
+	}
 	Animation() {}
 	virtual ~Animation() {}
 };
@@ -38,7 +40,9 @@ public:
 
 	MovingAnimation(
 		const std::string& _id, unsigned _reps, int _dx, int _dy, unsigned _delay
-	) : Animation(_id), reps(_reps), dx(_dx), dy(_dy), delay(_delay) {}
+	) : Animation(_id), reps(_reps), dx(_dx), dy(_dy), delay(_delay) {
+		int a = 10;
+	}
 
 	MovingAnimation() {}
 };
@@ -61,7 +65,9 @@ public:
 		const std::string& _id,
 		unsigned start, unsigned end,
 		unsigned reps, int dx, int dy, int delay
-	) : start(start), end(end), MovingAnimation(id, reps, dx, dy, delay) {}
+	) : start(start), end(end), MovingAnimation(_id, reps, dx, dy, delay) {
+		int a = 0;
+	}
 
 	FrameRangeAnimation() {}
 };
