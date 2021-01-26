@@ -53,10 +53,11 @@ public:
 		);
 	}
 
-	// Normal Jump, it can reach as height is height given
-	void Jump() {
+	// Normal Jump, it can reach as height is height given, lasts for jumpDuration. IsStopped means if it can force end the jump.
+	void Jump(int height, uint64_t jumpDuration, bool isStopped) {
 		assert(jumpAnimator && animation);
 		isJumping = true;
+		this->isStopped = isStopped;
 		PrepareJumpPhysics(height, jumpDuration);
 		jumpAnimator->Start(animation, physics.startTime);
 	}

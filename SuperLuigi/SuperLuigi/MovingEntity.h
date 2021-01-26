@@ -85,16 +85,15 @@ protected:
 std::function<void()> Prepare_MovingEntityOnDeath(MovingEntity *entity, FrameRangeAnimation *deathAnimation) {
 	return [entity, deathAnimation]() {
 		entity->StopMoving();
+		CollisionChecker::GetSingleton().Cancel(entity->GetSelf());
 		FrameRangeAnimator	*deathAnimator = new FrameRangeAnimator();
 		deathAnimator->SetOnFinish(
 			[entity](Animator *animator) {
 				entity->GetSelf()->SetVisibility(false);
 				SpriteManager::GetSingleton().Remove(entity->GetSelf());
-				//CollisionChecker::GetSingleton().Cancel(supermario->GetSelf(), entity->GetSelf());
 			}
 		);
 		entity->GetSelf()->SetCurrFilm(AnimationFilmHolder::Get().GetFilm(deathAnimation->GetId()));
 		deathAnimator->Start(entity->GetSelf(), deathAnimation, SystemClock::Get().micro_secs());
-
 	};
 }

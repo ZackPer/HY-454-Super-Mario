@@ -45,12 +45,12 @@ public:
 
 		// Search in the spriteMap for IDs that exist in the 
 		// unordered set and if they do add them to the spawnPointList.
-		for (int i = 0; i < tileSetIndexMap.size(); i++) {
-			for (int j = 0; j < tileSetIndexMap[i].size(); j++) {
+		for (int j = 0; j < tileSetIndexMap[0].size(); j++) {
+			for (int i = 0; i < tileSetIndexMap.size(); i++) {
 				int tileLayerId = tileSetIndexMap[i][j];
 				if (keySet.find(tileLayerId) != keySet.end()) {
 					PrimitiveCallback primitiveCallback = map[tileLayerId];
-					spawnPoints.push_back({Point(i, j), primitiveCallback});
+					spawnPoints.push_back({Point(j * 16, i * 16), primitiveCallback});
 					myTile.TileMapIndexes[i][j] = 20512; //Code for background sky
 				}
 			}
@@ -62,11 +62,26 @@ public:
 		for (auto &it : spawnPoints) {
 			Point p = it.first;
 			PrimitiveCallback callback = it.second;
-			callback(p.y * 16, p.x * 16);
+			callback(p.x, p.y);
 		}
 	}
 
+	void CheckForSpawn(Rect viewWindow) {
+		while (!spawnPoints.empty()) {
+			auto frontPair = spawnPoints.front();
+			Point p = frontPair.first;
+			PrimitiveCallback callback = frontPair.second;
+			if (p.x <= viewWindow.x + viewWindow.w) {
+				callback(p.x, p.y);
+				spawnPoints.pop_front();
+			}
+			else
+				break;
+		}
+	}
+
+
 private:
 	std::map<int, PrimitiveCallback> map;							// Maps primitive SpriteEntities to SpriteTileIDs
-	std::vector<std::pair<Point, PrimitiveCallback>> spawnPoints;	// Contains cloned SpriteEntities and their spawning positions
+	std::list<std::pair<Point, PrimitiveCallback>> spawnPoints;	// Contains cloned SpriteEntities and their spawning positions
 };

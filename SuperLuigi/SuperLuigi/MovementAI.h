@@ -15,7 +15,7 @@ public:
 	MovementAI(Sprite *self, int speed) {
 		this->self = self;
 		this->speed = speed;
-		movingAnimation = new MovingAnimation("goomba.walk", 0, 0, 0, 20000);
+		movingAnimation = new MovingAnimation("goomba.walk", 0, 0, 0, pow(10, 6) * 0.1);
 		movingAnimator = new MovingAnimator();
 	}
 
@@ -84,7 +84,7 @@ private:
 	OnSignChange		notifyChange;
 	Rect				lastPos;
 	bool				edgeDetection = false;
-	int					sign = 1;
+	int					sign = -1;
 	int					speed = 1;
 	std::vector<std::vector<int>> reverseGridTileStatus;
 

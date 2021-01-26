@@ -126,7 +126,7 @@ void InitPrimitiveCallbacks() {
 			FrameRangeAnimation walkLeft = FrameRangeAnimation("green.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
 			FrameRangeAnimation walkRight = FrameRangeAnimation("green.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
 			//Todo add animation  for death
-			MovingEntity *greenKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("green.koopa.walk.right"), "greek.koopa", &myGrid);
+			MovingEntity *greenKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("green.koopa.walk.left"), "greek.koopa", &myGrid);
 			greenKoopa->SetWalkLeft(walkLeft);
 			greenKoopa->SetWalkRight(walkRight);
 			greenKoopa->StartMoving();
@@ -142,7 +142,7 @@ void InitPrimitiveCallbacks() {
 		FrameRangeAnimation walkLeft = FrameRangeAnimation("red.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
 		FrameRangeAnimation walkRight = FrameRangeAnimation("red.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
 		//Todo add animation  for death
-		MovingEntity *redKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("red.koopa.walk.right"), "red.koopa", &myGrid);
+		MovingEntity *redKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("red.koopa.walk.left"), "red.koopa", &myGrid);
 		redKoopa->SetWalkLeft(walkLeft);
 		redKoopa->SetWalkRight(walkRight);
 		redKoopa->StartMoving();
@@ -181,27 +181,7 @@ void initializeAnimationsAndSprites() {
 	//Clipper
 	clipper = Clipper();
 	clipper = MakeTileLayerClipper(&myTile);
-	
-	// //MysteryTile
-	// mysteryTileMushroom = new MysteryTile(&myGrid, "mushroom");
-	// bricktile = new BrickTile(&myGrid);
 
-	// std::function<void(Sprite* s1, Sprite* s2)> f = [](Sprite* s1, Sprite* s2) {
-	// 	std::cout << "Bumped";
-	// };
-	
-	// //Collisions
-	// CollisionChecker::GetSingleton().Register(
-	// 	supermario->GetSelf(),
-	// 	&(mysteryTileMushroom->GetSprite()),
-	// 	mysteryTileMushroom->GetOnCollison()
-	// );
-
-	// CollisionChecker::GetSingleton().Register(
-	// 	supermario->GetSelf(),
-	// 	&(bricktile->GetSprite()),
-	// 	bricktile->GetOnCollison()
-	// );
 }
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
@@ -218,7 +198,8 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	ALLEGRO_KEYBOARD_STATE	keyboardState;
 	al_start_timer(timer);
 
-	EntitySpawner::Get().SpawnSprites();
+	EntitySpawner::Get().CheckForSpawn(myTile.viewWin.displayArea);
+	//EntitySpawner::Get().SpawnSprites();
 	assert(supermario);
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), supermario->GetSelf()->GetBox().x);
 
@@ -253,6 +234,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 
 			BitmapBlit(myTile.viewWin.bitmap, Rect(0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));
 
+			EntitySpawner::Get().CheckForSpawn(myTile.viewWin.dimensions);
 			//Display all sprites that are visible:
 			auto list = SpriteManager::GetSingleton().GetDisplayList();
 			for (auto &it : list)

@@ -49,7 +49,7 @@ public:
 				!gravityModule.GetIsFalling() &&
 				!jumpModule.IsJumping())
 			{
-				jumpModule.Jump();
+				jumpModule.Jump(80, 1000000 * 0.7, false);
 			}
 			else if (!al_key_down(&keyState, ALLEGRO_KEY_UP) && jumpModule.IsJumping()){
 				jumpModule.ForceEndJump();
@@ -98,7 +98,9 @@ public:
 	}
 
 	void Bounce() {
-		
+		OnStopFalling();
+		self->gravity.Reset();
+		jumpModule.Jump(20, 1000000 * 0.2, true);
 	}
 
 	void ChangeSuper(bool b, Direction looking) {
