@@ -48,7 +48,7 @@ public:
 		};
 
 		bouncingAnimation = new MovingAnimation(
-			"bouncing.upas",
+			"bouncing.up",
 			4,
 			0,
 			-1,

@@ -154,8 +154,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
 			//calculate ending position
 			dx = supermario->GetSelf()->GetBox().x - startPosX;
-			dy = supermario->GetSelf()->GetBox().y - startPosY;
-			
+			dy = supermario->GetSelf()->GetBox().y - startPosY;	
 			//move camera
 			cameraMover.ScrollAccordingToCharacter(dx, dy);
 
