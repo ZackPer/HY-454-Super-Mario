@@ -155,7 +155,15 @@ void pipeShowcase() {
 	std::function<void(Sprite* s1, Sprite* s2)> pipeF = [](Sprite* s1, Sprite* s2) {
 		ALLEGRO_KEYBOARD_STATE key;
 		al_get_keyboard_state(&key);
-		if (al_key_down(&key, ALLEGRO_KEY_DOWN) && supermario->GetInputEnabled()) {
+		if (al_key_down(&key, ALLEGRO_KEY_DOWN) && supermario->GetInputEnabled() 
+			&& ((supermario->GetSelf()->GetBox().x + 
+				supermario->GetSelf()->GetBox().w >= 
+				first_pipe->GetSprite()->GetBox().x + 16)
+			&& (supermario->GetSelf()->GetBox().x +
+				supermario->GetSelf()->GetBox().w <
+				first_pipe->GetSprite()->GetBox().x 
+				+ first_pipe->GetSprite()->GetBox().w))
+			) {
 			std::cout << "I GO DOWNNNNN" << std::endl;
 			MovingAnimation* pipe_anim = new MovingAnimation("pipe_down", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
 			MovingAnimator* pipe_animator = new MovingAnimator();
@@ -183,7 +191,7 @@ void pipeShowcase() {
 			pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
 		}
 		else {
-			std::cout << "Press down to go inside the pipe :)" << std::endl;
+			//std::cout << "Press down to go inside the pipe :)" << std::endl;
 		}
 	};
 	CollisionChecker::GetSingleton().Register(supermario->GetSelf(), first_pipe->GetSprite(), pipeF);
@@ -194,7 +202,14 @@ void pipeShowcase() {
 	std::function<void(Sprite* s1, Sprite* s2)> pipeReturn = [](Sprite* s1, Sprite* s2) {
 		ALLEGRO_KEYBOARD_STATE key;
 		al_get_keyboard_state(&key);
-		if (al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled()) {
+		std::cout << supermario->GetSelf()->GetBox().y + supermario->GetSelf()->GetBox().h << "   ";
+		std::cout << "Panw " << return_first_pipe->GetSprite()->GetBox().y << "   ";
+		std::cout << "Katw  " << return_first_pipe->GetSprite()->GetBox().y << std::endl;
+		if (al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled() 
+			 && supermario->GetSelf()->GetBox().y + 
+				supermario->GetSelf()->GetBox().h > 
+				return_first_pipe->GetSprite()->GetBox().y + 16
+			) {
 			std::cout << "I GO LEFTTTTTTTTT" << std::endl;
 			MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
 			MovingAnimator* pipe_animator = new MovingAnimator();

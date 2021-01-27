@@ -80,6 +80,9 @@ public:
 			if (al_key_down(&keyState, ALLEGRO_KEY_2)) {
 				ChangeSuper(false, looking);
 			}
+			else if (al_key_down(&keyState, ALLEGRO_KEY_ESCAPE)) {
+				exit(EXIT_SUCCESS);
+			}
 		}
 	}
 	
