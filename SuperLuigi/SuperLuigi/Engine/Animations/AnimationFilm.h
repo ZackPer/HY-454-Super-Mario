@@ -109,6 +109,7 @@ public:
 		std::vector<Rect>& rects
 	) {	
 		id = parsedFilms["films"][startPos]["id"];
+		std::cout << id << std::endl;
 		path = id + ".png";
 		for (int i = 0; i < parsedFilms["films"][startPos]["frames"].size(); i++) {
 			byte x = parsedFilms["films"][startPos]["frames"][i]["x"];

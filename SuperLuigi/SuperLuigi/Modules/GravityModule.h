@@ -25,9 +25,8 @@ public:
 		animator->SetOnAction(
 			[=](Animator *animator, const Animation& animation) {
 				int dh = physics.FindCurrentOffset(SystemClock::Get().micro_secs());
-				if (dh + (startPos - self->GetBox().y) > 0) {
+				if (dh + (startPos - self->GetBox().y) > 0)
 					self->Move(0, dh + (startPos - self->GetBox().y));
-				}
 			}
 		);
 		
@@ -45,7 +44,7 @@ public:
 		animator->Start(self, animation, SystemClock::Get().micro_secs());
 	}
 
-	// Stop the falling animation.
+	// StopMoving the falling animation.
 	void StopFalling() {
 		assert(animator && animation);
 		animator->Stop();

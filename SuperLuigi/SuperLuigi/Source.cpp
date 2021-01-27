@@ -21,6 +21,7 @@
 #include "./MovingEntity.h"
 #include "./EntitySpawner.h"
 #include "BlockTile.h"
+#include "./PrimitiveHolder.h"
 
 #define WIDTH	720
 #define	HEIGHT	540
@@ -45,7 +46,8 @@ EntitySpawner *entitySpawner;
 
 Mario *supermario;
 MovingEntity *goomba;
-MysteryTile* mtile1;
+MysteryTile* mysteryTileMushroom;
+BrickTile* bricktile;
 
 Pipe* first_pipe;
 Pipe* return_first_pipe;
@@ -79,67 +81,65 @@ namespace mario {
 TileLayer a;
 int startPosX = 0, startPosY = 0;
 
-void initializeAnimationsAndSprites() {
-	//Initialize AnimationFilms
-	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
-	
-	//Clipper
-	clipper = Clipper();
-	clipper = MakeTileLayerClipper(&myTile);
-}
 
 void InitPrimitiveCallbacks() {
+	PrimitiveHolder::Get().SetMyGrid(&myGrid);
+	PrimitiveHolder::Get().SetViewWindow(&myTile.viewWin.dimensions);
+
+	EntitySpawner::Get().Add(
+		196,
+		[=](int x, int y) -> SpriteEntity * {
+			supermario = (Mario *)PrimitiveHolder::Get().CreateMario(x, y);
+			EntityHolder::Get().Add(supermario);
+			return supermario;
+		}
+	);
 	EntitySpawner::Get().Add(
 		200,
 		[=](int x, int y) -> SpriteEntity * {
-			//Goomba
-			FrameRangeAnimation walk = FrameRangeAnimation("goomba.walk", 0, 2, 0, 0, 0, 300000);
-			//Todo add animation  for death
-			MovingEntity *goomba = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", &myGrid);
-			goomba->SetWalkLeft(walk);
-			goomba->SetWalkRight(walk);
-			goomba->Start();
-			goomba->GetSelf()->SetVisibility(true);
-			return goomba;
+			return PrimitiveHolder::Get().CreateGoomba(x, y);
 		}
 	);
 	EntitySpawner::Get().Add(
 		201,
 		[=](int x, int y) -> SpriteEntity * {
-			//Green Koopa
-			FrameRangeAnimation walkLeft = FrameRangeAnimation("green.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
-			FrameRangeAnimation walkRight = FrameRangeAnimation("green.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
-			//Todo add animation  for death
-			MovingEntity *greenKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("green.koopa.walk.right"), "greek.koopa", &myGrid);
-			greenKoopa->SetWalkLeft(walkLeft);
-			greenKoopa->SetWalkRight(walkRight);
-			greenKoopa->Start();
-			greenKoopa->GetSelf()->SetVisibility(true);
-			return greenKoopa;
+			return PrimitiveHolder::Get().CreateGreenKoopa(x, y);
 		}
 	);
 	EntitySpawner::Get().Add(
 		220,
 		[=](int x, int y) -> SpriteEntity * {
-			//Green Koopa
-			FrameRangeAnimation walkLeft = FrameRangeAnimation("red.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
-			FrameRangeAnimation walkRight = FrameRangeAnimation("red.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
-			//Todo add animation  for death
-			MovingEntity *redKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("red.koopa.walk.right"), "red.koopa", &myGrid);
-			redKoopa->SetWalkLeft(walkLeft);
-			redKoopa->SetWalkRight(walkRight);
-			redKoopa->Start();
-			redKoopa->GetSelf()->SetVisibility(true);
-			return redKoopa;
+			return PrimitiveHolder::Get().CreateRedKoopa(x, y);
+		}
+	);
+	EntitySpawner::Get().Add(
+		216,
+		[=](int x, int y) -> SpriteEntity * {
+			//Mystery Mushroom tile.
+			MysteryTile *mysteryTile = new MysteryTile(x, y, &myGrid, "mushroom");
+			mysteryTile->GetSprite()->SetVisibility(true);
+
+			//Collider
+			CollisionChecker::GetSingleton().Register(
+				supermario->GetSelf(),
+				mysteryTile->GetSprite(),
+				mysteryTile->GetOnCollison()
+			);
+
+			return nullptr;
+		}
+	);
+	EntitySpawner::Get().Add(
+		219,
+		[=](int x, int y) -> SpriteEntity * {
+			return PrimitiveHolder::Get().CreatePiranhaPlant(x, y);
 		}
 	);
 
 	EntitySpawner::Get().Add(
-		196,
+		41,
 		[=](int x, int y) -> SpriteEntity * {
-			supermario = new Mario(x, y - 1, &myGrid, &(myTile.viewWin.dimensions));
-			supermario->GetSelf()->SetVisibility(true);
-			return supermario;
+			return PrimitiveHolder::Get().CreatePipe(x, y);
 		}
 	);
 
@@ -157,7 +157,7 @@ void pipeShowcase() {
 		al_get_keyboard_state(&key);
 		if (al_key_down(&key, ALLEGRO_KEY_DOWN) && supermario->GetInputEnabled()) {
 			std::cout << "I GO DOWNNNNN" << std::endl;
-			MovingAnimation* pipe_anim = new MovingAnimation("pipe_down", 15, 1, 0, 2 * 25000);
+			MovingAnimation* pipe_anim = new MovingAnimation("pipe_down", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
 			MovingAnimator* pipe_animator = new MovingAnimator();
 			pipe_animator->SetOnAction(
 				[=](Animator* animator, const Animation &anim_ref) {
@@ -196,7 +196,7 @@ void pipeShowcase() {
 		al_get_keyboard_state(&key);
 		if (al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled()) {
 			std::cout << "I GO LEFTTTTTTTTT" << std::endl;
-			MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", 15, 1, 0, 2 * 25000);
+			MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
 			MovingAnimator* pipe_animator = new MovingAnimator();
 			pipe_animator->SetOnAction(
 				[=](Animator* animator, const Animation &anim_ref) {
@@ -227,6 +227,19 @@ void pipeShowcase() {
 	};
 
 	CollisionChecker::GetSingleton().Register(supermario->GetSelf(), return_first_pipe->GetSprite(), pipeReturn);
+}
+
+void initializeAnimationsAndSprites() {
+	//Initialize AnimationFilms
+	AnimationFilmHolder::Get() = InitAnimationFilmHolder();
+	
+	// Parses and spawns all entities.
+	InitPrimitiveCallbacks();
+	EntitySpawner::Get().ParseAndReplaceSpawnPoints(myTile, myGrid);
+
+	//Clipper
+	clipper = Clipper();
+	clipper = MakeTileLayerClipper(&myTile);
 
 }
 
@@ -244,9 +257,10 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	ALLEGRO_KEYBOARD_STATE	keyboardState;
 	al_start_timer(timer);
 
-	EntitySpawner::Get().SpawnSprites();
+	EntitySpawner::Get().CheckForSpawn(myTile.viewWin.displayArea); //Everything on the first frame is spawned here including mario.
 	assert(supermario);
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), supermario->GetSelf()->GetBox().x);
+	EntityHolder::Get().SetSuperMario(supermario);
 
 	//pipes kodikas
 	pipeShowcase();
@@ -271,16 +285,18 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			draw = false;
 			al_flip_display();
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
-			myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
+
 			//calculate ending position
 			dx = supermario->GetSelf()->GetBox().x - startPosX;
 			dy = supermario->GetSelf()->GetBox().y - startPosY;
-			
 			//move camera
 			cameraMover.ScrollAccordingToCharacter(dx, dy);
 
-			BitmapBlit(myTile.viewWin.bitmap, Rect( 0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));			
+			myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
 
+			BitmapBlit(myTile.viewWin.bitmap, Rect(0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));
+
+			EntitySpawner::Get().CheckForSpawn(myTile.viewWin.dimensions);
 			//Display all sprites that are visible:
 			auto list = SpriteManager::GetSingleton().GetDisplayList();
 			for (auto &it : list)
@@ -337,11 +353,6 @@ int main() {
 
 	initializeAnimationsAndSprites();	
 	
-	// Parses and spawns all entities.
-	InitPrimitiveCallbacks();
-	EntitySpawner::Get().ParseAndReplaceSpawnPoints(myTile, myGrid);
-
-
 	//mapping map indexes to tilesetIndexes
 	TileMap mapTileIndexes;
 	myTile.getMapIndexes(mapTileIndexes, myTile.TileMapIndexes);

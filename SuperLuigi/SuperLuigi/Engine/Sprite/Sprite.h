@@ -154,7 +154,6 @@ public:
 	Sprite() = default;
 };
 
-
 void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite) {
 	sprite->gravity.SetGravityAddicted(true);
 	std::function<bool(Rect&)> function = [gridLayer](Rect& r){ 
@@ -181,14 +180,20 @@ public:
 			types.insert(std::pair<std::string, SpriteList>(s->GetTypeId(), SpriteList()));
 		types.find(s->GetTypeId())->second.push_back(s);
 
+		bool returnFlag = false;
 		if(dpyList.empty())
 			dpyList.push_back(s);
-		else
-			for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
-				if ((*it)->GetZorder() == s->GetZorder()) {
-					dpyList.insert(it, s);
+		else {
+			if (s->GetZorder() >= dpyList.back()->GetZorder())
+				dpyList.push_back(s);
+			else
+				for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
+					if ((*it)->GetZorder() <= s->GetZorder()) {
+						dpyList.insert(it, s);
+						returnFlag = true;
+					}
 				}
-			}
+		}
 	}
 	void Remove(Sprite* s) {
 		types.find(s->GetTypeId())->second.remove(s);

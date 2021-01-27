@@ -17,48 +17,64 @@ public:
 		: SpriteEntity(x, y, film, type)
 	{
 		this->myGrid = myGrid;
+		self->SetVisibility(true);
 		InitGravity(myGrid);
+
+		movement = MovementAI(self, 1);
+		movement.Init(myGrid);
+		movement.SetOnSignChange(
+			[=](int sign) {
+			animator.Stop();
+			if (sign == 1) {
+				auto film = AnimationFilmHolder::Get().GetFilm(walkRight.GetId());
+				GetSelf()->SetCurrFilm(film);
+				animator.Start(self, &walkRight, SystemClock::Get().micro_secs());
+			}
+			else if (sign == -1) {
+				auto film = AnimationFilmHolder::Get().GetFilm(walkLeft.GetId());
+				GetSelf()->SetCurrFilm(film);
+				animator.Start(self, &walkLeft, SystemClock::Get().micro_secs());
+			}
+			else
+				assert(0);
+		}
+		);
 	}
 	
 	void SetWalkLeft(FrameRangeAnimation animation) {
 		this->walkLeft = animation;
 	}
+	
 	void SetWalkRight(FrameRangeAnimation animation) {
 		this->walkRight = animation;
 	}
-	void SetDeath(FrameRangeAnimation animation) {
-		this->death = animation;
-	}
-
-	void Start() {
-		movement = MovementAI(self, 1);
-		movement.SetEdgeDetection(true);
-		movement.Init(myGrid);
-		self->Move(0, 0);
-		movement.SetOnSignChange(
-			[=](int sign) {
-				animator.Stop();
-				if (sign == 1) {
-					auto film = AnimationFilmHolder::Get().GetFilm(walkRight.GetId());
-					GetSelf()->SetCurrFilm(film);
-					animator.Start(self, &walkRight, SystemClock::Get().micro_secs());
-				}
-				else if (sign == -1) {
-					auto film = AnimationFilmHolder::Get().GetFilm(walkLeft.GetId());
-					GetSelf()->SetCurrFilm(film);
-					animator.Start(self, &walkLeft, SystemClock::Get().micro_secs());
-				}
-				else
-					assert(0);
-			}
-		);
+	
+	void StartMoving() {
+		movement.Start();
 		animator.Start(self, &walkRight, SystemClock::Get().micro_secs());
+		self->Move(0, 0);
+	}
+	
+	void StopMoving() {
+		movement.Stop();
+		animator.Stop();
+	}
+	
+	void SetSpeed(int speed) {
+		movement.SetSpeed(speed);
 	}
 
-	SpriteEntity *Clone(int x, int y) {
-		MovingEntity *clone = new MovingEntity(x, y, self->GetCurrFilm(), self->GetTypeId(), myGrid);
-		return clone;
+	void SetEdgeDetection(bool edgeDetection) {
+		movement.SetEdgeDetection(edgeDetection);
 	}
+
+	void SetSign(int sign) {
+		movement.SetSign(sign);
+	}
+
+	//Those are implemented bellow the Primitive holder code for linking purposes
+	std::function<void()> Prepare_DefaultOnDeath(MovingEntity *entity);
+	std::function<void()> Prepare_DefaultOnDeath(MovingEntity *entity, FrameRangeAnimation *deathAnimation);
 
 protected:
 	MovementAI			movement;
