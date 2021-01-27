@@ -11,8 +11,10 @@
 #include "EntityHolder.h"
 #include "SpriteEntity.h"
 #include "MovingEntity.h"
+#include "SimpleEntity.h"
 #include "Shell.h"
 #include "Mario.h"
+#include "PiranhaPlant.h"
 
 // Singleton class that holds all the primitive callback functions for entity creation.
 class PrimitiveHolder {
@@ -60,7 +62,7 @@ public:
 		return greenKoopa;
 	}
 	SpriteEntity *CreateRedKoopa(int x, int y) {
-		MovingEntity *greenKoopa = (MovingEntity *)CreateKoopa(x, y, "green");
+		MovingEntity *greenKoopa = (MovingEntity *)CreateKoopa(x, y, "red");
 		greenKoopa->SetEdgeDetection(true);
 		return greenKoopa;
 	}
@@ -69,6 +71,16 @@ public:
 		Shell *shell = new Shell(x, y, color, myGrid);
 		EntityHolder::Get().Add((SpriteEntity *)shell);
 		return (SpriteEntity*)shell;
+	}
+	SpriteEntity *CreatePiranhaPlant(int x, int y) {
+		PiranhaPlant *piranha = new PiranhaPlant(x, y);
+		return (SpriteEntity *)piranha;
+	}
+	SpriteEntity *CreatePipe(int x, int y) {
+		SimpleEntity *pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("pipe"), "pipe");
+		pipe->GetSelf()->SetVisibility(true);
+		pipe->GetSelf()->SetZorder(5);
+		return (SpriteEntity *)pipe;
 	}
 
 	void SetMyGrid(GridLayer *myGrid) {

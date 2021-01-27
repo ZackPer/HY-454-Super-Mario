@@ -105,19 +105,9 @@ void InitPrimitiveCallbacks() {
 	);
 	EntitySpawner::Get().Add(
 		220,
-			[=](int x, int y) -> SpriteEntity * {
-		//Green Koopa
-		FrameRangeAnimation walkLeft = FrameRangeAnimation("red.koopa.walk.left", 0, 2, 0, 0, 0, 300000);
-		FrameRangeAnimation walkRight = FrameRangeAnimation("red.koopa.walk.right", 0, 2, 0, 0, 0, 300000);
-		//Todo add animation  for death
-		MovingEntity *redKoopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm("red.koopa.walk.left"), "red.koopa", &myGrid);
-		redKoopa->SetWalkLeft(walkLeft);
-		redKoopa->SetWalkRight(walkRight);
-		redKoopa->StartMoving();
-		redKoopa->SetEdgeDetection(true);
-		redKoopa->GetSelf()->SetVisibility(true);
-		return redKoopa;
-	}
+		[=](int x, int y) -> SpriteEntity * {
+			return PrimitiveHolder::Get().CreateRedKoopa(x, y);
+		}
 	);
 	EntitySpawner::Get().Add(
 		216,
@@ -134,6 +124,18 @@ void InitPrimitiveCallbacks() {
 			);
 
 			return nullptr;
+		}
+	);
+	EntitySpawner::Get().Add(
+		219,
+		[=](int x, int y) -> SpriteEntity * {
+			return PrimitiveHolder::Get().CreatePiranhaPlant(x, y);
+		}
+	);
+	EntitySpawner::Get().Add(
+		41,
+		[=](int x, int y) -> SpriteEntity * {
+			return PrimitiveHolder::Get().CreatePipe(x, y);
 		}
 	);
 }

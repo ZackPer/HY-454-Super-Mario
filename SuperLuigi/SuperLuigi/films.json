@@ -1,6 +1,17 @@
 {
   "films": [
     {
+      "id": "pipe",
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 32,
+          "h": 32
+        }
+      ]
+    },
+    {
       "id": "piranha.plant",
       "frames": [
         {
