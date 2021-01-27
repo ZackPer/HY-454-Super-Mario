@@ -42,7 +42,6 @@ public:
 		return NULL;
 	}
 
-
 	void SetSuperMario(Mario *supermario) {
 		this->supermario = supermario;
 	}
@@ -52,5 +51,5 @@ public:
 
 private:
 	List	entityList;
-	Mario						*supermario;
+	Mario	*supermario;
 };

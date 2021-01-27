@@ -49,12 +49,19 @@ public:
 			for (int i = 0; i < tileSetIndexMap.size(); i++) {
 				int tileLayerId = tileSetIndexMap[i][j];
 				if (keySet.find(tileLayerId) != keySet.end()) {
-					PrimitiveCallback primitiveCallback = map[tileLayerId];
+					PrimitiveCallback primitiveCallback = map[tileLayerId];											
 					spawnPoints.push_back({Point(j * 16, i * 16), primitiveCallback});
+					MakeBrickTilesSolid(tileLayerId, i, j, myGrid);
 					myTile.TileMapIndexes[i][j] = 20512; //Code for background sky
 				}
 			}
 		}
+	}
+
+	void MakeBrickTilesSolid(int tileLayerId, int i, int j, GridLayer& myGrid) {
+		if (tileLayerId == 216 || tileLayerId == 197 || tileLayerId == 199 || tileLayerId == 198)
+			myGrid.gridTileStatus[i][j] = GRID_SOLID_TILE;
+		//also add for brick that need to be kept in a map as well.
 	}
 
 	// Instantiates all sprites corresponding to their spawn positions

@@ -26,11 +26,17 @@ protected:
 	std::string typeId, stateId;
 	Mover mover;
 	MotionQuantizer quantizer;
+	ALLEGRO_COLOR* tint;
 
 public:
 	void setCurrFilm(AnimationFilm* film) {
 		currFilm = film;
 	}
+
+	void SetTint(ALLEGRO_COLOR t) {
+		*tint = t;
+	}
+
 	bool directMotion = false;
 	GravityHandler gravity;
 	GravityHandler& GetGravityHandler(void)
@@ -62,7 +68,7 @@ public:
 	void SetRange(int x, int y) {
 		quantizer = quantizer.SetRange(x, y);
 	}
-	const Rect& GetBox(void) const
+	const Rect GetBox(void) const
 	{
 		return Rect(x, y, frameBox.w, frameBox.h);
 	}
@@ -139,6 +145,27 @@ public:
 		}
 	}
 
+	void DisplayTinted(ALLEGRO_BITMAP* dest, const Rect& dpyArea, const Clipper& clipper) const {
+		Rect clippedBox;
+		Point dpyPos;
+		Rect r = GetBox();
+		if (clipper.Clip(r, dpyArea, &dpyPos, &clippedBox)) {
+			Rect clippedFrame = Rect(
+				frameBox.x - clippedBox.x,
+				frameBox.y - clippedBox.y,
+				clippedBox.w,
+				clippedBox.h
+			);
+			TintedBlit(
+				currFilm->GetBitmap(),
+				clippedFrame,
+				dest,
+				dpyPos,
+				*tint
+			);
+		}
+	}
+
 	const Mover MakeSpriteGridLayerMover(GridLayer* gridLayer, Sprite* sprite) {
 		return [gridLayer, sprite](Rect& r, int* dx, int* dy) {
 			// the r is actually awlays the sprite->GetBox():
@@ -148,7 +175,7 @@ public:
 				sprite->SetHasDirectMotion(true).Move(*dx, *dy).SetHasDirectMotion(false);
 		};
 	};
-	Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId);
+	Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId, int _zorder);
 
 	
 	Sprite() = default;
@@ -190,7 +217,7 @@ public:
 				for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
 					if ((*it)->GetZorder() <= s->GetZorder()) {
 						dpyList.insert(it, s);
-						returnFlag = true;
+						return;
 					}
 				}
 		}
@@ -219,10 +246,12 @@ public:
 
 SpriteManager SpriteManager::singleton;
 
-Sprite::Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId = "") :
-	x(_x), y(_y), currFilm(film), typeId(_typeId)
+Sprite::Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId = "", int _zorder = 0) :
+	x(_x), y(_y), currFilm(film), typeId(_typeId), zorder(_zorder)
 	{
 		frameNo = currFilm->GetTotalFrames();
 		SetFrame(0);
+		tint = new ALLEGRO_COLOR();
+		*tint = al_map_rgba_f(1, 1, 1, 1);
 		SpriteManager::GetSingleton().Add(this);
-}
+	}

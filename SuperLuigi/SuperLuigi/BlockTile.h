@@ -29,7 +29,7 @@ protected:
 
 	bool DetectIfHit(int x1, int xSelf, int y1, int ySelf) {
 		if (y1 == ySelf)
-			if (abs(x1 - xSelf) <= 5) {
+			if (abs(x1 - xSelf) == 8) {
 				return true;
 			}
 		return false;
@@ -39,8 +39,8 @@ public:
 		collided = [=](Sprite* mario, Sprite* self) {
 			if (state != BUMPED) {
 				//if mario hit from the bottom and is near the middle
-				if ((mario->GetBox().y - mario->GetBox().h) == self->GetBox().y)
-					if (abs(mario->GetBox().x - self->GetBox().x) <= 5) {
+				if (mario->GetBox().y == (self->GetBox().y + self->GetBox().h))
+					if (abs((mario->GetBox().x + mario->GetBox().w / 2 ) - (self->GetBox().x + self->GetBox().w / 2 )) <= 8) {
 						state = BUMPED;
 						if (action)
 							action(mario, self);
@@ -160,7 +160,7 @@ public:
 		);		
 
 		//initialize sprite
-		sprite = new Sprite(x, y, currFilm, "mysteryTile"); //placeholder
+		sprite = new Sprite(x, y, currFilm, "mysteryTile", 1); //placeholder
 		sprite->SetMover(sprite->MakeSpriteGridLayerMover(myGrid, sprite));
 		sprite->SetBoundingArea();
 		sprite->SetZorder(1);
@@ -202,7 +202,7 @@ public:
 	BrickTile(int x, int y, GridLayer* myGrid) {
 		currFilm = AnimationFilmHolder::Get().GetFilm("bricktile.idle");
 
-		sprite = new Sprite(x, y, currFilm, "bricktile"); //placeholder
+		sprite = new Sprite(x, y, currFilm, "bricktile", 1); //placeholder
 		sprite->SetMover(sprite->MakeSpriteGridLayerMover(myGrid, sprite));
 		sprite->SetBoundingArea();
 

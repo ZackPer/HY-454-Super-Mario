@@ -143,6 +143,58 @@ void InitPrimitiveCallbacks() {
 		}
 	);
 
+	EntitySpawner::Get().Add(
+		197,
+		[=](int x, int y) -> SpriteEntity* {
+			//Mystery Mushroom tile.
+			MysteryTile* mysteryTile = new MysteryTile(x, y, &myGrid, "lifemushroom");
+			mysteryTile->GetSprite()->SetVisibility(true);
+
+			//Collider
+			CollisionChecker::GetSingleton().Register(
+				supermario->GetSelf(),
+				mysteryTile->GetSprite(),
+				mysteryTile->GetOnCollison()
+			);
+			//if not returned memory leak
+			return nullptr;
+		}
+	);
+	EntitySpawner::Get().Add(
+		199,
+		[=](int x, int y) -> SpriteEntity* {
+			//Mystery Mushroom tile.
+			MysteryTile* mysteryTile = new MysteryTile(x, y, &myGrid, "star");
+			mysteryTile->GetSprite()->SetVisibility(true);
+
+			//Collider
+			CollisionChecker::GetSingleton().Register(
+				supermario->GetSelf(),
+				mysteryTile->GetSprite(),
+				mysteryTile->GetOnCollison()
+			);
+			//if not returned memory leak
+			return nullptr;
+		}
+	);
+	EntitySpawner::Get().Add(
+		198,
+		[=](int x, int y) -> SpriteEntity* {
+			//Mystery Mushroom tile.
+			BrickTile* brick = new BrickTile(x, y, &myGrid);
+			brick->GetSprite()->SetVisibility(true);
+
+			//Collider
+			CollisionChecker::GetSingleton().Register(
+				supermario->GetSelf(),
+				brick->GetSprite(),
+				brick->GetOnCollison()
+			);
+			//if not returned memory leak
+			return nullptr;
+		}
+	);
+
 }
 
 void pipeShowcase() {
@@ -240,7 +292,6 @@ void initializeAnimationsAndSprites() {
 	//Clipper
 	clipper = Clipper();
 	clipper = MakeTileLayerClipper(&myTile);
-
 }
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
@@ -275,25 +326,20 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			//get Input
 			supermario->InputPoll();
 			//movements
-			supermario->GetselfMover()->Move(supermario->direction, supermario->isRunning, supermario->isSuper, supermario->looking);
-			//reset variables
-			supermario->isRunning = false;
-			supermario->direction = NO;
-			draw = true;
-		}
-		if (draw == true) {		
-			draw = false;
+			if(supermario->animationState != GROWING && supermario->animationState != DYING)
+				supermario->GetselfMover()->Move(supermario->direction, supermario->isRunning, supermario->isSuper, supermario->looking, supermario->animationState);
+
 			al_flip_display();
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 
 			//calculate ending position
 			dx = supermario->GetSelf()->GetBox().x - startPosX;
-			dy = supermario->GetSelf()->GetBox().y - startPosY;
+			dy = supermario->GetSelf()->GetBox().y - startPosY;	
+
 			//move camera
 			cameraMover.ScrollAccordingToCharacter(dx, dy);
-
+			//calculate and blit view 
 			myTile.TileTerrainDisplay(mapTileIndexes, myTile.viewWin.bitmap, myTile.viewWin.dimensions, myTile.viewWin.displayArea);
-
 			BitmapBlit(myTile.viewWin.bitmap, Rect(0, 0, myTile.viewWin.dimensions.w, myTile.viewWin.dimensions.h), beforeScaleBitmap, Point(0, 0));
 
 			EntitySpawner::Get().CheckForSpawn(myTile.viewWin.dimensions);
@@ -301,11 +347,19 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			auto list = SpriteManager::GetSingleton().GetDisplayList();
 			for (auto &it : list)
 				if (it->IsVisible()) {
+					if (it->GetTypeId() == "mario") {
+						it->DisplayTinted(beforeScaleBitmap, cameraCoords, clipper);
+						continue;
+					}				
 					it->Display(beforeScaleBitmap, cameraCoords, clipper);
 				}
 
 			al_set_target_bitmap(al_get_backbuffer(display));
 			al_draw_scaled_bitmap(beforeScaleBitmap, 0, 0, WIDTH / 3, HEIGHT / 3, 0, 0, WIDTH, HEIGHT, 0);
+
+			//reset variables
+			supermario->isRunning = false;
+			supermario->direction = NO;
 			dx = dy = 0;
 			CollisionChecker::GetSingleton().Check();
 		}
@@ -319,7 +373,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-	myTile = TileLayer("CSVMaps/pipes.csv");
+	myTile = TileLayer("CSVMaps/map1.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
