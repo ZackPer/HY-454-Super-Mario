@@ -67,15 +67,11 @@ public:
 		RemoveRelation(s1, s2);
 	}
 	void Check(void) const {
-		// Old good trustworthy way
-		for (int i = entries.size(); i >= 0; i--) {
-			if (entries.empty())
-				return;
-
-			auto &e = entries.back();
-			if (std::get<0>(e)->CollisionCheck(std::get<1>(e)))
+		for(auto &e : entries)
+			if (std::get<0>(e)->CollisionCheck(std::get<1>(e))) {
 				std::get<2>(e)(std::get<0>(e), std::get<1>(e));
-		}
+				break;
+			}
 	}
 	static auto GetSingleton(void) -> CollisionChecker&
 	{

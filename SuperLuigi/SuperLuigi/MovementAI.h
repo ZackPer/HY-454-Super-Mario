@@ -15,7 +15,7 @@ public:
 	MovementAI(Sprite *self, int speed) {
 		this->self = self;
 		this->speed = speed;
-		movingAnimation = new MovingAnimation("goomba.walk", 0, 0, 0, pow(10, 6) * 0.1);
+		movingAnimation = new MovingAnimation("goomba.walk", 0, 0, 0, pow(10, 6) * 0.03);
 		movingAnimator = new MovingAnimator();
 	}
 
@@ -75,6 +75,14 @@ public:
 	
 	void SetOnSignChange(OnSignChange callback) {
 		notifyChange = callback;
+	}
+
+	void SetSpeed(int speed) {
+		this->speed = speed;
+	}
+
+	void SetSign(int sign) {
+		this->sign = sign;
 	}
 
 private:

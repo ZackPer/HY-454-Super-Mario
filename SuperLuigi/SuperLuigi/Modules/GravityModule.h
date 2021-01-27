@@ -25,9 +25,8 @@ public:
 		animator->SetOnAction(
 			[=](Animator *animator, const Animation& animation) {
 				int dh = physics.FindCurrentOffset(SystemClock::Get().micro_secs());
-				if (dh + (startPos - self->GetBox().y) > 0) {
+				if (dh + (startPos - self->GetBox().y) > 0)
 					self->Move(0, dh + (startPos - self->GetBox().y));
-				}
 			}
 		);
 		
