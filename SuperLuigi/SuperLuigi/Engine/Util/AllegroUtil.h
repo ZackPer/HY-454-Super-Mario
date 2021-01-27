@@ -19,3 +19,14 @@ void MaskedBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* d
 	//al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 	BitmapBlit(sourceBitmap, sourceRect, destinationBitmap, destPoint);
 }
+
+void TintedBlit(ALLEGRO_BITMAP* sourceBitmap, Rect sourceRect, ALLEGRO_BITMAP* destinationBitmap, Point destPoint, ALLEGRO_COLOR color) {
+	al_set_target_bitmap(destinationBitmap);
+	al_draw_tinted_bitmap_region(
+		sourceBitmap,
+		color,
+		sourceRect.x, sourceRect.y, sourceRect.w, sourceRect.h,
+		destPoint.x, destPoint.y,
+		0
+	);
+}

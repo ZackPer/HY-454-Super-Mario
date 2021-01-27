@@ -29,11 +29,13 @@ protected:
 	}
 
 public:
-
 	void Register(Sprite* s1, Sprite* s2, const Action& f)
 	{
 		assert(!IsInEntries(s1, s2));
 		entries.push_back(std::make_tuple(s1, s2, f));
+	}
+	void Cancel(Sprite* s) {
+		
 	}
 	void Cancel(Sprite* s1, Sprite* s2) {
 		entries.erase(Find(s1, s2));

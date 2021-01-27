@@ -4,6 +4,7 @@
 #include "Engine/Animations/Animators.h"
 #include "Engine/Sprite/Sprite.h"
 #include "Engine/SystemClock.h"
+
 enum State {
 	IDLE = 0,
 	BUMPED = 1,
@@ -13,7 +14,7 @@ using CollisionFunc = std::function<void(Sprite* s1, Sprite* s2)>;
 
 class BlockSprite {
 protected:
-	Sprite sprite;
+	Sprite *sprite;
 	State state;
 
 	AnimationFilm*		currFilm;
@@ -28,7 +29,7 @@ protected:
 
 	bool DetectIfHit(int x1, int xSelf, int y1, int ySelf) {
 		if (y1 == ySelf)
-			if (abs(x1 - xSelf) <= 5) {
+			if (abs(x1 - xSelf) == 8) {
 				return true;
 			}
 		return false;
@@ -38,8 +39,8 @@ public:
 		collided = [=](Sprite* mario, Sprite* self) {
 			if (state != BUMPED) {
 				//if mario hit from the bottom and is near the middle
-				if ((mario->GetBox().y - mario->GetBox().h) == self->GetBox().y)
-					if (abs(mario->GetBox().x - self->GetBox().x) <= 5) {
+				if (mario->GetBox().y == (self->GetBox().y + self->GetBox().h))
+					if (abs(mario->GetBox().x - self->GetBox().x) <= 6) {
 						state = BUMPED;
 						if (action)
 							action(mario, self);
@@ -57,7 +58,7 @@ public:
 
 		hitStartAnimator.SetOnAction(
 			[=](Animator* animator, const Animation& anim) {
-				sprite.Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy());
+				sprite->Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy());
 			}
 		);
 
@@ -70,7 +71,7 @@ public:
 
 		hitEndAnimator.SetOnAction(
 			[=](Animator* animator, const Animation& anim) {
-				sprite.Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy());
+				sprite->Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy());
 			}
 		);
 
@@ -90,7 +91,7 @@ public:
 		return collided;
 	}
 
-	Sprite& GetSprite() {
+	Sprite *GetSprite() {
 		return sprite;
 	}
 };
@@ -109,14 +110,15 @@ private:
 			containedFilm = AnimationFilmHolder::Get().GetFilm(MysteryID);
 			//Initialize Sprite
 			containedSprite = new Sprite(
-				sprite.GetBox().x,
-				sprite.GetBox().y,
+				sprite->GetBox().x,
+				sprite->GetBox().y,
 				containedFilm,
 				MysteryID + ".sprite"
 			);
 			containedSprite->SetMover(containedSprite->MakeSpriteGridLayerMover(myGrid, containedSprite));
 			containedSprite->SetBoundingArea();
 			containedSprite->SetZorder(0);
+			containedSprite->SetVisibility(true);
 
 			//Initialize spawn Animation and spawn Animator
 			containedSpawnAnimation = MovingAnimation(
@@ -142,7 +144,7 @@ private:
 public:
 	MysteryTile() {}
 
-	MysteryTile(GridLayer* myGrid, std::string id) {
+	MysteryTile(int x, int y, GridLayer* myGrid, std::string id) {
 		mysteryID = id;
 		this->myGrid = myGrid;
 		//initialize default Film, Animation
@@ -158,23 +160,24 @@ public:
 		);		
 
 		//initialize sprite
-		sprite = Sprite(45, 80, currFilm, "mysteryTile"); //placeholder
-		sprite.SetMover(sprite.MakeSpriteGridLayerMover(myGrid, &sprite));
-		sprite.SetBoundingArea();
+		sprite = new Sprite(x, y, currFilm, "mysteryTile", 1); //placeholder
+		sprite->SetMover(sprite->MakeSpriteGridLayerMover(myGrid, sprite));
+		sprite->SetBoundingArea();
+		sprite->SetZorder(1);
 
 		//initialize default frame Animator
 		frameAnimator.SetOnAction(
 			[=](Animator* animator, const Animation& anim) {
-				frameAnimator.FrameRange_Action(&sprite, animator, (const FrameRangeAnimation&)anim);
+				frameAnimator.FrameRange_Action(sprite, animator, (const FrameRangeAnimation&)anim);
 			}
 		);
-		frameAnimator.Start(&sprite, &idleAnimation, SystemClock::Get().micro_secs());
+		frameAnimator.Start(sprite, &idleAnimation, SystemClock::Get().micro_secs());
 
 		//set bumping action
 		action = [=] (Sprite* mario, Sprite* self){
 			frameAnimator.Stop();
-			sprite.SetCurrFilm(AnimationFilmHolder::Get().GetFilm("mysterytile.bumped"));
-			sprite.SetFrame(0);
+			sprite->SetCurrFilm(AnimationFilmHolder::Get().GetFilm("mysterytile.bumped"));
+			sprite->SetFrame(0);
 			hitStartAnimator.Start(bouncingAnimation,SystemClock::Get().micro_secs());
 		};
 
@@ -196,12 +199,12 @@ class BrickTile : public BlockSprite {
 public:
 	BrickTile() {}
 
-	BrickTile(GridLayer* myGrid) {
+	BrickTile(int x, int y, GridLayer* myGrid) {
 		currFilm = AnimationFilmHolder::Get().GetFilm("bricktile.idle");
 
-		sprite = Sprite(61, 80, currFilm, "bricktile"); //placeholder
-		sprite.SetMover(sprite.MakeSpriteGridLayerMover(myGrid, &sprite));
-		sprite.SetBoundingArea();
+		sprite = new Sprite(x, y, currFilm, "bricktile",1); //placeholder
+		sprite->SetMover(sprite->MakeSpriteGridLayerMover(myGrid, sprite));
+		sprite->SetBoundingArea();
 
 		hitEndAnimator.SetOnFinish(
 			[=](Animator* animator) {

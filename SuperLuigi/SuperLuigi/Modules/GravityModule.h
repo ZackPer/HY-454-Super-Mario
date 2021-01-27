@@ -45,7 +45,7 @@ public:
 		animator->Start(self, animation, SystemClock::Get().micro_secs());
 	}
 
-	// Stop the falling animation.
+	// StopMoving the falling animation.
 	void StopFalling() {
 		assert(animator && animation);
 		animator->Stop();

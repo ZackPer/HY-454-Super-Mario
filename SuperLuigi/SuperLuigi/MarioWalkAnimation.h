@@ -3,10 +3,17 @@
 #include "Engine/Animations/Animations.h"
 #include "Engine/Animations/Animators.h"
 
-enum MarioState {
+enum MovingState {
 	NOT_MOVING = 0,
 	MOVING_RIGHT = 1,
 	MOVING_LEFT = 2
+};
+
+enum AnimationState {
+	WALKING = 1,
+	JUMPING = 2,
+	GROWING = 3,
+	DYING = 4
 };
 
 enum Direction {
@@ -20,9 +27,8 @@ enum Direction {
 class MarioMover {
 	FrameRangeAnimator	FramesAnimator;
 	MovingAnimator		MoveAnimator;
-	MarioState state;
-	AnimationFilm* walkRightFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.right");
-	AnimationFilm* walkLeftFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.left");
+	AnimationFilm*		walkRightFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.right");
+	AnimationFilm*		walkLeftFilm = AnimationFilmHolder::Get().GetFilm("littlemario.walk.left");
 
 	FrameRangeAnimation RightWalkFramesAnimation;
 	MovingAnimation		RightWalkMoveAnimation;
@@ -38,6 +44,12 @@ class MarioMover {
 	FrameRangeAnimation	RemainingMoveRightFrameAnimation;
 	FrameRangeAnimation	RemainingMoveLeftFrameAnimation;
 
+	MovingState			movingState;
+	AnimationState		animationState;
+
+	MovingAnimation		RightJumpMoveAnimation;
+	MovingAnimation		LeftJumpMoveAnimation;
+
 	Sprite* mario;
 	float acceleration = 1;
 	bool super = false;
@@ -46,7 +58,7 @@ public:
 
 	MarioMover(Sprite* s) {
 		mario = s;
-		state = NOT_MOVING;
+		movingState = NOT_MOVING;
 
 		MoveAnimator.SetOnAction(
 			[=](Animator* animator, const Animation& anim) {
@@ -148,6 +160,21 @@ public:
 			20000
 		);
 
+		//setting jump moving animations
+		LeftJumpMoveAnimation = MovingAnimation(
+			"left.jump",
+			0,
+			-2,
+			0,
+			16666
+		);
+		RightJumpMoveAnimation = MovingAnimation(
+			"right.jump",
+			0,
+			2,
+			0,
+			16666
+		);
 		
 	}
 
@@ -175,40 +202,48 @@ public:
 			acceleration = 1;
 	}
 
-	void Move(Direction dir, bool isRunning, bool super, Direction& looking) {
+	void StopAllAnimators() {		
+		MoveAnimator.Stop();
+		FramesAnimator.Stop();
+		RemainingMoveFramesAnimator.Stop();
+		RemainingMoveAnimator.Stop();
+	}
+
+	void Move(Direction dir, bool isRunning, bool super, Direction& looking, AnimationState animationState) {
 		ApplyAcceleration(isRunning);
+
 		switch (dir) {
 		case RIGHT:
 			//stop all other animations			
 			mario->setCurrFilm(walkRightFilm);
-			if (state != MOVING_RIGHT) {
+			if (movingState != MOVING_RIGHT) {
 				acceleration = 1;
 				MoveAnimator.Start(&RightWalkMoveAnimation, SystemClock::Get().micro_secs());
 				FramesAnimator.Start(mario, &RightWalkFramesAnimation, SystemClock::Get().micro_secs());
 			}
-			state = MOVING_RIGHT;
+			movingState = MOVING_RIGHT;
 			looking = RIGHT;
 			break;
 		case LEFT:
 			//stop all other animations
 			mario->setCurrFilm(walkLeftFilm);
-			if (state != MOVING_LEFT) {
+			if (movingState != MOVING_LEFT) {
 				acceleration = 1;
 				MoveAnimator.Start(&LeftWalkMoveAnimation, SystemClock::Get().micro_secs());
 				FramesAnimator.Start(mario, &LeftWalkFramesAnimation, SystemClock::Get().micro_secs());
 			}
-			state = MOVING_LEFT;
+			movingState = MOVING_LEFT;
 			looking = LEFT;
 			break;
 		default:
-			if (state == MOVING_RIGHT && isRunning) {
+			if (movingState == MOVING_RIGHT && isRunning) {
 				RemainingMoveFramesAnimator.Start(mario, &RemainingMoveRightFrameAnimation, SystemClock::Get().micro_secs());
 			}
-			else if (state == MOVING_LEFT && isRunning) {
+			else if (movingState == MOVING_LEFT && isRunning) {
 				RemainingMoveFramesAnimator.Start(mario, &RemainingMoveLeftFrameAnimation, SystemClock::Get().micro_secs());
 			}
 			acceleration = 1;
-			state = NOT_MOVING;
+			movingState = NOT_MOVING;
 			MoveAnimator.Stop();
 			FramesAnimator.Stop();
 			mario->SetFrame(0);

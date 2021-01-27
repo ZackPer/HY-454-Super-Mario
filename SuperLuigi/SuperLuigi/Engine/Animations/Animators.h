@@ -176,6 +176,12 @@ public:
 		for (auto* a : copied)
 			a->Progress(currTime);
 	}
+
+	void TimeShift(unsigned dt) {
+		for (auto* a : running)
+			a->TimeShift(dt);
+	}
+
 	static auto GetSingleton(void) -> AnimatorManager& { return singleton; }
 	static auto GetSingletonConst(void) -> const AnimatorManager& { return singleton; }
 };
