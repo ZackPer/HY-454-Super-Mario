@@ -11,6 +11,7 @@
 #include "./Engine/Grid/Grid.h"
 #include "Game.h"
 #include "./Engine/SystemClock.h"
+#include "./Engine/Sprite/Pipe.h"
 #include "./Engine/Sprite/Sprite.h"
 #include "./Engine/Sprite/Clipper.h"
 #include "./Engine/Physics/CollisionHander.h"
@@ -46,6 +47,8 @@ Mario *supermario;
 MovingEntity *goomba;
 MysteryTile* mtile1;
 
+Pipe* first_pipe;
+Pipe* return_first_pipe;
 namespace mario {
 	class App {
 	public:
@@ -139,6 +142,92 @@ void InitPrimitiveCallbacks() {
 			return supermario;
 		}
 	);
+
+}
+
+void pipeShowcase() {
+	//creating our first pipe
+	first_pipe = new Pipe(176, 112, AnimationFilmHolder::Get().GetFilm("green.pipe.up"), "pipe");
+	//adding it to the sprite manager
+	SpriteManager::GetSingleton().Add((first_pipe->GetSprite()));
+
+	//set up collision with our mario
+	std::function<void(Sprite* s1, Sprite* s2)> pipeF = [](Sprite* s1, Sprite* s2) {
+		ALLEGRO_KEYBOARD_STATE key;
+		al_get_keyboard_state(&key);
+		if (al_key_down(&key, ALLEGRO_KEY_DOWN) && supermario->GetInputEnabled()) {
+			std::cout << "I GO DOWNNNNN" << std::endl;
+			MovingAnimation* pipe_anim = new MovingAnimation("pipe_down", 15, 1, 0, 2 * 25000);
+			MovingAnimator* pipe_animator = new MovingAnimator();
+			pipe_animator->SetOnAction(
+				[=](Animator* animator, const Animation &anim_ref) {
+				supermario->GetSelf()->Move(0, 1);
+				}
+			);
+			pipe_animator->SetOnStart(
+				[=](Animator* animator) {
+				supermario->SetInput(false);
+				supermario->GetSelf()->SetHasDirectMotion(true);
+				}
+			);
+			pipe_animator->SetOnFinish(
+				[=](Animator* animator) {
+					supermario->GetSelf()->SetPos(704, 0);
+					supermario->GetSelf()->Move(0, 0);
+					cameraMover.SetRightMost(supermario->GetSelf()->GetBox().x);
+					myTile.viewWin.dimensions.x = supermario->GetSelf()->GetBox().x - 48;
+					supermario->SetInput(true);
+					supermario->GetSelf()->SetHasDirectMotion(false);
+				}
+			);
+			pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
+		}
+		else {
+			std::cout << "Press down to go inside the pipe :)" << std::endl;
+		}
+	};
+	CollisionChecker::GetSingleton().Register(supermario->GetSelf(), first_pipe->GetSprite(), pipeF);
+
+
+	return_first_pipe = new Pipe(896, 112, AnimationFilmHolder::Get().GetFilm("green.pipe.left"), "pipe");
+	SpriteManager::GetSingleton().Add((return_first_pipe->GetSprite()));
+	std::function<void(Sprite* s1, Sprite* s2)> pipeReturn = [](Sprite* s1, Sprite* s2) {
+		ALLEGRO_KEYBOARD_STATE key;
+		al_get_keyboard_state(&key);
+		if (al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled()) {
+			std::cout << "I GO LEFTTTTTTTTT" << std::endl;
+			MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", 15, 1, 0, 2 * 25000);
+			MovingAnimator* pipe_animator = new MovingAnimator();
+			pipe_animator->SetOnAction(
+				[=](Animator* animator, const Animation &anim_ref) {
+					supermario->GetSelf()->Move(1, 0);
+				}
+			);
+			pipe_animator->SetOnStart(
+				[=](Animator* animator) {
+					supermario->SetInput(false);
+					supermario->GetSelf()->SetHasDirectMotion(true);
+				}
+			);
+			pipe_animator->SetOnFinish(
+				[=](Animator* animator) {
+					supermario->GetSelf()->SetPos(176, 96);
+					supermario->GetSelf()->Move(0, 0);
+					cameraMover.SetRightMost(supermario->GetSelf()->GetBox().x);
+					myTile.viewWin.dimensions.x = supermario->GetSelf()->GetBox().x - 48;
+					supermario->SetInput(true);
+					supermario->GetSelf()->SetHasDirectMotion(false);
+				}
+			);
+			pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
+		}
+		else {
+			std::cout << "Press down to go inside the pipe :)" << std::endl;
+		}
+	};
+
+	CollisionChecker::GetSingleton().Register(supermario->GetSelf(), return_first_pipe->GetSprite(), pipeReturn);
+
 }
 
 void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
@@ -158,6 +247,9 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	EntitySpawner::Get().SpawnSprites();
 	assert(supermario);
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), supermario->GetSelf()->GetBox().x);
+
+	//pipes kodikas
+	pipeShowcase();
 
 	while (1) {
 		ALLEGRO_EVENT ev;
@@ -211,7 +303,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-	myTile = TileLayer("repo/SuperLuigi/SuperLuigi/CSVMaps/map1.csv");
+	myTile = TileLayer("CSVMaps/pipes.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;

@@ -50,5 +50,8 @@ public:
 		tileLayer->viewWin.dimensions.y += dy;
 	}
 
+	void SetRightMost(int _x) {
+		rightmost = _x;
+	}
 	
 };

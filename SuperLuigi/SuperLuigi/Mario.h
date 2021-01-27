@@ -33,11 +33,13 @@ public:
 		self->Move(0, 0); //This is to calculate gravity at least once.
 		selfMover = new MarioMover(self);
 		growerAndShrinker = new GrowerAndShrinker(self);
+
+		InputEnabled = true;
 	}
 
 	void InputPoll() {
 		uint64_t currentTime = SystemClock::Get().micro_secs();
-		if (currentTime - inputDelay > lastInput) {
+		if (currentTime - inputDelay > lastInput && (InputEnabled)) {
 			lastInput = currentTime;
 			ALLEGRO_KEYBOARD_STATE keyState;
 			al_get_keyboard_state(&keyState);
@@ -83,18 +85,17 @@ public:
 	
 	void PrepareMoverWithViewWindowCheck(GridLayer *myGrid, Rect *viewWindow) {
 		auto defaultMover = self->MakeSpriteGridLayerMover(myGrid, self);
-		auto viewWindowBoundriesCheck = [=](Rect& box, int *dx, int *dy) {
-			auto position = self->GetBox();
-			if (position.x + *dx < viewWindow->x) {
-				*dx = viewWindow->x - position.x;
-			}
-			else if (position.x + *dx > viewWindow->x + viewWindow->w) {
-				*dx = viewWindow->x + viewWindow->w - position.x;
-			}
-			defaultMover(box, dx, dy);
-		};
-		self->SetMover(viewWindowBoundriesCheck);
-
+			auto viewWindowBoundriesCheck = [=](Rect& box, int *dx, int *dy) {
+				auto position = self->GetBox();
+				if (position.x + *dx < viewWindow->x) {
+					*dx = viewWindow->x - position.x;
+				}
+				else if (position.x + *dx > viewWindow->x + viewWindow->w) {
+					*dx = viewWindow->x + viewWindow->w - position.x;
+				}
+				defaultMover(box, dx, dy);
+			};
+			self->SetMover(viewWindowBoundriesCheck);
 	}
 
 	SpriteEntity *Clone(int x, int y) {
@@ -141,6 +142,14 @@ public:
 		return selfMover;
 	}
 
+	void SetInput(bool in) {
+		InputEnabled = in;
+	}
+
+	bool GetInputEnabled() {
+		return InputEnabled;
+	}
+
 protected:
 	GridLayer			*myGrid;
 	Rect				*viewWindow;
@@ -151,6 +160,7 @@ protected:
 	uint64_t			inputDelay = 8000;
 	MarioMover*			selfMover;
 	GrowerAndShrinker*	growerAndShrinker;
+	bool				InputEnabled;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);

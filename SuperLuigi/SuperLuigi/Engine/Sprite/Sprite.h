@@ -93,6 +93,17 @@ public:
 		Rect rect = GetBox();
 		*(((BoundingBox*) (boundingArea))->area) = rect;
 	}
+
+	void SetBoundingArea(Rect rect) {
+		/*assert(!boundingArea); boundingArea = area;*/
+		boundingArea = (BoundingArea*)new BoundingBox();
+		std::cout << rect.x << " " << rect.y << " "
+			<< rect.w << " " << rect.h << std::endl;
+		
+		*(((BoundingBox*)(boundingArea))->area) = rect;
+		std::cout << GetBox().x << " " << GetBox().y << " " 
+			      << GetBox().w << " " << GetBox().h << std::endl;
+	}
 	auto GetBoundingArea(void) const -> const BoundingArea*{
 		return boundingArea;
 	}
