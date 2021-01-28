@@ -1,8 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_font.h>
 #include <iostream>
 #include "./Engine/Animations/AnimationFilm.h"
 #include "./Engine/Animations/Animations.h"
@@ -244,6 +246,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	assert(supermario);
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), supermario->GetSelf()->GetBox().x);
 	EntityHolder::Get().SetSuperMario(supermario);
+	ALLEGRO_FONT* font = al_load_ttf_font("SuperPlumberBrothers.ttf", 32, NULL);
 
 	while (1) {
 		ALLEGRO_EVENT ev;
@@ -258,7 +261,14 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			if(supermario->animationState != GROWING && supermario->animationState != DYING)
 				supermario->GetselfMover()->Move(supermario->direction, supermario->isRunning, supermario->isSuper, supermario->looking, supermario->animationState);
 
+			al_draw_text(font, al_map_rgb(255, 255, 255), 50, 30, ALLEGRO_ALIGN_CENTER, "SCORE");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 50, 70, ALLEGRO_ALIGN_CENTER, "O");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 30, ALLEGRO_ALIGN_CENTER, "COINS");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 70, ALLEGRO_ALIGN_CENTER, "O");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 30, ALLEGRO_ALIGN_CENTER, "LIVES");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 70,` ALLEGRO_ALIGN_CENTER, "O");
 			al_flip_display();
+
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
 
 			//calculate ending position
@@ -302,7 +312,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-	myTile = TileLayer("CSVMaps/map1.csv");
+	myTile = TileLayer("CSVMaps/pipes.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
@@ -317,6 +327,8 @@ int main() {
 	al_install_keyboard();
 	al_init_image_addon();
 	al_init_primitives_addon();
+	al_init_ttf_addon();
+	al_init_font_addon();
 
 	myTile.tileset = al_load_bitmap("Tiles/super_mario_tiles_with_sprites.png");
 	myTile.TileLayerBitmap = al_create_bitmap(mapRows*TILE_HEIGHT, mapColumns*TILE_WIDTH);
