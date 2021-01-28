@@ -5,6 +5,8 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include <iostream>
 #include "./Engine/Animations/AnimationFilm.h"
 #include "./Engine/Animations/Animations.h"
@@ -323,6 +325,13 @@ void MainMenu() {
 	enum MenuState { Play, Settings, Exit };
 	MenuState m_state = Play;
 	font = al_load_ttf_font("SuperPlumberBrothers.ttf", 64, NULL);
+
+	ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_coin.wav");
+	ALLEGRO_SAMPLE_ID *ssId = new ALLEGRO_SAMPLE_ID();
+	ssId->_id = 0;
+	ssId->_index = 0;
+	al_reserve_samples(3);
+
 	ALLEGRO_KEYBOARD_STATE keyState;
 	ALLEGRO_EVENT_QUEUE *event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -348,6 +357,7 @@ void MainMenu() {
 		al_wait_for_event(event_queue, &events);
 		if (events.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (events.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				al_play_sample(soundEf, 1.0, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
 				switch (m_state)
 				{
 				case Play:
@@ -364,6 +374,7 @@ void MainMenu() {
 				}
 			}
 			else if (events.keyboard.keycode == ALLEGRO_KEY_UP) {
+				al_play_sample(soundEf, 1.0, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
 				switch (m_state)
 				{
 				case Play:
@@ -380,6 +391,7 @@ void MainMenu() {
 				}
 			}
 			else if (events.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+				al_play_sample(soundEf, 1.0, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
 				switch (m_state)
 				{
 				case Play:
@@ -402,10 +414,12 @@ void MainMenu() {
 
 void IncludeAddons() {
 	al_install_keyboard();
+	al_install_audio();
 	al_init_image_addon();
 	al_init_primitives_addon();
 	al_init_ttf_addon();
 	al_init_font_addon();
+	al_init_acodec_addon();
 }
 int main() {
 	ALLEGRO_DISPLAY *display;

@@ -201,8 +201,10 @@ public:
 		FrameRangeAnimator *frameAnimator = new FrameRangeAnimator();
 		frameAnimator->Start(coin->GetSelf(), frameAnimation, SystemClock::Get().micro_secs());
 
-		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
+		ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_coin.wav");
 
+		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
+			al_play_sample(soundEf, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 			EntityHolder::Get().GetSuperMario()->AddPoints(100);
 			EntityHolder::Get().GetSuperMario()->AddCoin(1);
 			if (std::stoi(EntityHolder::Get().GetSuperMario()->GetCoins()) >= 100) {
