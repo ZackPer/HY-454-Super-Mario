@@ -202,17 +202,23 @@ void InitPrimitiveCallbacks() {
 	);
 	EntitySpawner::Get().Add(
 		103,
-		[=](int x, int y) -> SpriteEntity * {
+		[=](int x, int y) -> SpriteEntity *{
 			return PrimitiveHolder::Get().CreateTransportPoint(x, y);
 		}
 	);
 	EntitySpawner::Get().Add(
 		81,
-		[=](int x, int y) -> SpriteEntity * {
-		return PrimitiveHolder::Get().CreateTransportPipe2(x, y);
-	}
+		[=](int x, int y) -> SpriteEntity *{
+			return PrimitiveHolder::Get().CreateTransportPipe2(x, y);
+		}
 	);
-
+	EntitySpawner::Get().Add(
+		179,
+		[=](int x, int y) -> SpriteEntity * {
+			return PrimitiveHolder::Get().CreateCoin(x, y);
+		}
+	);
+	//179
 }
 
 void initializeAnimationsAndSprites() {

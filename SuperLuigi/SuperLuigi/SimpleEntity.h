@@ -8,7 +8,7 @@ public:
 	SimpleEntity(int x, int y, AnimationFilm *film, std::string typeId)
 		: SpriteEntity(x, y, film, typeId)
 	{
-		
+		GetSelf()->SetHasDirectMotion(true);
 	}
 
 private:
