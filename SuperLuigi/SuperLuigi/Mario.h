@@ -60,6 +60,8 @@ public:
 					!gravityModule.GetIsFalling() &&
 					!jumpModule.IsJumping())
 				{
+					ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_jump_small.wav");
+					al_play_sample(soundEf, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 					jumpModule.Jump(80, 1000000 * 0.7, false);
 				}
 				else if (!al_key_down(&keyState, ALLEGRO_KEY_UP) && jumpModule.IsJumping()){

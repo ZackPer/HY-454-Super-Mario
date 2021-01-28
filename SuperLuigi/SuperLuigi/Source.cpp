@@ -325,12 +325,20 @@ void MainMenu() {
 	enum MenuState { Play, Settings, Exit };
 	MenuState m_state = Play;
 	font = al_load_ttf_font("SuperPlumberBrothers.ttf", 64, NULL);
+	al_reserve_samples(10);
 
 	ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_coin.wav");
 	ALLEGRO_SAMPLE_ID *ssId = new ALLEGRO_SAMPLE_ID();
 	ssId->_id = 0;
 	ssId->_index = 0;
-	al_reserve_samples(3);
+
+
+	ALLEGRO_SAMPLE *song = al_load_sample("Sounds/theme.wav");
+	ALLEGRO_SAMPLE_INSTANCE *songInstance = al_create_sample_instance(song);
+	al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
+	al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
+
+	al_play_sample_instance(songInstance);
 
 	ALLEGRO_KEYBOARD_STATE keyState;
 	ALLEGRO_EVENT_QUEUE *event_queue = al_create_event_queue();

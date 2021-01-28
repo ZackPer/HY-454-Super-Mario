@@ -89,7 +89,10 @@ public:
 		first_pipe->GetSelf()->SetVisibility(true);
 		//set up collision with our mario
 		Mario *supermario = EntityHolder::Get().GetSuperMario();
-		std::function<void(Sprite* s1, Sprite* s2)> pipeF = [first_pipe, supermario](Sprite* s1, Sprite* s2) {
+
+		ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_pipe.wav");
+
+		std::function<void(Sprite* s1, Sprite* s2)> pipeF = [first_pipe, supermario, soundEf](Sprite* s1, Sprite* s2) {
 			ALLEGRO_KEYBOARD_STATE key;
 			al_get_keyboard_state(&key);
 			
@@ -111,6 +114,7 @@ public:
 					[=](Animator* animator) {
 						supermario->SetInput(false);
 						supermario->GetSelf()->SetHasDirectMotion(true);
+						al_play_sample(soundEf, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 					}
 				);
 				pipe_animator->SetOnFinish(
@@ -153,6 +157,7 @@ public:
 			al_get_keyboard_state(&key);
 			auto marioBox = supermario->GetSelf()->GetBox();
 			auto pipeBox = return_first_pipe->GetSelf()->GetBox();
+			ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_pipe.wav");
 			if (
 				al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled()
 				&& marioBox.y + marioBox.h > pipeBox.y + 16
@@ -169,6 +174,7 @@ public:
 					[=](Animator* animator) {
 						supermario->SetInput(false);
 						supermario->GetSelf()->SetHasDirectMotion(true);
+						al_play_sample(soundEf, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 					}
 				);
 				pipe_animator->SetOnFinish(
