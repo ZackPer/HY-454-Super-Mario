@@ -266,7 +266,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 30, ALLEGRO_ALIGN_CENTER, "COINS");
 			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 70, ALLEGRO_ALIGN_CENTER, "O");
 			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 30, ALLEGRO_ALIGN_CENTER, "LIVES");
-			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 70,` ALLEGRO_ALIGN_CENTER, "O");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 70, ALLEGRO_ALIGN_CENTER, "O");
 			al_flip_display();
 
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
@@ -312,7 +312,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 
 int main() {
 	ALLEGRO_DISPLAY *display;
-	myTile = TileLayer("CSVMaps/pipes.csv");
+	myTile = TileLayer("CSVMaps/map1.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;
