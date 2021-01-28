@@ -228,7 +228,6 @@ public:
 
 	void CoinsToLives() {
 		this->AddLives(1);
-		this->lives++;
 		this->coins = 0;
 	}
 

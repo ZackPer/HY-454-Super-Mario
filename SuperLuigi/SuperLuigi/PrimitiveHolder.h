@@ -204,8 +204,8 @@ public:
 		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
 
 			EntityHolder::Get().GetSuperMario()->AddPoints(100);
-			EntityHolder::Get().GetSuperMario()->AddCoin(100);
-			if (std::stoi(EntityHolder::Get().GetSuperMario()->GetCoins()) >= 2) {
+			EntityHolder::Get().GetSuperMario()->AddCoin(1);
+			if (std::stoi(EntityHolder::Get().GetSuperMario()->GetCoins()) >= 100) {
 				EntityHolder::Get().GetSuperMario()->CoinsToLives();
 			}
 			coin->SetVisibility(false);
