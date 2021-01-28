@@ -82,6 +82,118 @@ public:
 		pipe->GetSelf()->SetZorder(5);
 		return (SpriteEntity *)pipe;
 	}
+	SpriteEntity *CreateTransportPipe1(int x, int y) {
+		CreatePipe(x, y);
+		auto first_pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("green.pipe.up"), "transportPipe1");
+		EntityHolder::Get().Add(first_pipe);
+		first_pipe->GetSelf()->SetVisibility(true);
+		//set up collision with our mario
+		Mario *supermario = EntityHolder::Get().GetSuperMario();
+		std::function<void(Sprite* s1, Sprite* s2)> pipeF = [first_pipe, supermario](Sprite* s1, Sprite* s2) {
+			ALLEGRO_KEYBOARD_STATE key;
+			al_get_keyboard_state(&key);
+			
+			auto marioBox = supermario->GetSelf()->GetBox();
+			auto pipeBox = first_pipe->GetSelf()->GetBox();
+			if (
+				al_key_down(&key, ALLEGRO_KEY_DOWN) && supermario->GetInputEnabled()
+				&& ((marioBox.x + marioBox.w >= pipeBox.x + 16) && (marioBox.x + marioBox.w < pipeBox.x + pipeBox.w))
+				)
+			{
+				MovingAnimation* pipe_anim = new MovingAnimation("pipe_down", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
+				MovingAnimator* pipe_animator = new MovingAnimator();
+				pipe_animator->SetOnAction(
+					[=](Animator* animator, const Animation &anim_ref) {
+						supermario->GetSelf()->Move(0, 1);
+					}
+				);
+				pipe_animator->SetOnStart(
+					[=](Animator* animator) {
+						supermario->SetInput(false);
+						supermario->GetSelf()->SetHasDirectMotion(true);
+					}
+				);
+				pipe_animator->SetOnFinish(
+					[=](Animator* animator) {
+						extern CameraMover cameraMover;
+						auto results = EntityHolder::Get().Find("transportPoint");
+						if (results.size() == 1) {
+							SimpleEntity *transportPoint = (SimpleEntity *)results[0];
+							Rect box = transportPoint->GetSelf()->GetBox();
+							supermario->GetSelf()->SetPos(box.x, box.y);
+							supermario->GetSelf()->Move(0, 0);
+							cameraMover.SetRightMost(supermario->GetSelf()->GetBox().x);
+							myTile.viewWin.dimensions.x = supermario->GetSelf()->GetBox().x - 48;
+							supermario->SetInput(true);
+							supermario->GetSelf()->SetHasDirectMotion(false);
+						}
+						else // If you have transporting pipes, you need to have a transportPoint
+							assert(0);
+					}
+				);
+				pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
+			}
+		};
+		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), first_pipe->GetSelf(), pipeF);
+
+		return first_pipe;
+	}
+	SpriteEntity *CreateTransportPoint(int x, int y) {
+		auto transportPoint = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("empty"), "transportPoint");
+		EntityHolder::Get().Add(transportPoint);
+		return transportPoint;
+	}
+	SpriteEntity *CreateTransportPipe2(int x, int y) {
+		auto return_first_pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("green.pipe.left"), "pipe");
+		return_first_pipe->GetSelf()->SetVisibility(true);
+		EntityHolder::Get().Add(return_first_pipe);
+		Mario *supermario = EntityHolder::Get().GetSuperMario();
+		std::function<void(Sprite* s1, Sprite* s2)> pipeReturn = [return_first_pipe, supermario, this](Sprite* s1, Sprite* s2) {
+			ALLEGRO_KEYBOARD_STATE key;
+			al_get_keyboard_state(&key);
+			auto marioBox = supermario->GetSelf()->GetBox();
+			auto pipeBox = return_first_pipe->GetSelf()->GetBox();
+			if (
+				al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled()
+				&& marioBox.y + marioBox.h > pipeBox.y + 16
+				)
+			{
+				MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
+				MovingAnimator* pipe_animator = new MovingAnimator();
+				pipe_animator->SetOnAction(
+					[=](Animator* animator, const Animation &anim_ref) {
+						supermario->GetSelf()->Move(1, 0);
+					}
+				);
+				pipe_animator->SetOnStart(
+					[=](Animator* animator) {
+						supermario->SetInput(false);
+						supermario->GetSelf()->SetHasDirectMotion(true);
+					}
+				);
+				pipe_animator->SetOnFinish(
+					[=](Animator* animator) {
+						extern CameraMover cameraMover;
+						std::vector<SpriteEntity *> results = EntityHolder::Get().Find("transportPipe1");
+						if (results.size() == 0)
+							assert(0);
+
+						SimpleEntity *firstPipe = (SimpleEntity *)results[0];
+						Rect firstPipeBox = firstPipe->GetSelf()->GetBox();
+						supermario->GetSelf()->SetPos(firstPipeBox.x + 8, firstPipeBox.y - supermario->GetSelf()->GetBox().h);
+						supermario->GetSelf()->Move(0, 0);
+						cameraMover.SetRightMost(supermario->GetSelf()->GetBox().x);
+						myTile.viewWin.dimensions.x = supermario->GetSelf()->GetBox().x - 48;
+						supermario->SetInput(true);
+						supermario->GetSelf()->SetHasDirectMotion(false);
+					}
+				);
+				pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
+			}
+		};
+		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), return_first_pipe->GetSelf(), pipeReturn);
+		return return_first_pipe;
+	}
 
 	void SetMyGrid(GridLayer *myGrid) {
 		this->myGrid = myGrid;

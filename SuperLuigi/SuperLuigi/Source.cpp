@@ -49,8 +49,6 @@ MovingEntity *goomba;
 MysteryTile* mysteryTileMushroom;
 BrickTile* bricktile;
 
-Pipe* first_pipe;
-Pipe* return_first_pipe;
 namespace mario {
 	class App {
 	public:
@@ -194,106 +192,25 @@ void InitPrimitiveCallbacks() {
 			return nullptr;
 		}
 	);
-
-}
-
-void pipeShowcase() {
-	//creating our first pipe
-	first_pipe = new Pipe(176, 112, AnimationFilmHolder::Get().GetFilm("green.pipe.up"), "pipe");
-	//adding it to the sprite manager
-	SpriteManager::GetSingleton().Add((first_pipe->GetSprite()));
-
-	//set up collision with our mario
-	std::function<void(Sprite* s1, Sprite* s2)> pipeF = [](Sprite* s1, Sprite* s2) {
-		ALLEGRO_KEYBOARD_STATE key;
-		al_get_keyboard_state(&key);
-		if (al_key_down(&key, ALLEGRO_KEY_DOWN) && supermario->GetInputEnabled() 
-			&& ((supermario->GetSelf()->GetBox().x + 
-				supermario->GetSelf()->GetBox().w >= 
-				first_pipe->GetSprite()->GetBox().x + 16)
-			&& (supermario->GetSelf()->GetBox().x +
-				supermario->GetSelf()->GetBox().w <
-				first_pipe->GetSprite()->GetBox().x 
-				+ first_pipe->GetSprite()->GetBox().w))
-			) {
-			std::cout << "I GO DOWNNNNN" << std::endl;
-			MovingAnimation* pipe_anim = new MovingAnimation("pipe_down", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
-			MovingAnimator* pipe_animator = new MovingAnimator();
-			pipe_animator->SetOnAction(
-				[=](Animator* animator, const Animation &anim_ref) {
-				supermario->GetSelf()->Move(0, 1);
-				}
-			);
-			pipe_animator->SetOnStart(
-				[=](Animator* animator) {
-				supermario->SetInput(false);
-				supermario->GetSelf()->SetHasDirectMotion(true);
-				}
-			);
-			pipe_animator->SetOnFinish(
-				[=](Animator* animator) {
-					supermario->GetSelf()->SetPos(704, 0);
-					supermario->GetSelf()->Move(0, 0);
-					cameraMover.SetRightMost(supermario->GetSelf()->GetBox().x);
-					myTile.viewWin.dimensions.x = supermario->GetSelf()->GetBox().x - 48;
-					supermario->SetInput(true);
-					supermario->GetSelf()->SetHasDirectMotion(false);
-				}
-			);
-			pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
+	EntitySpawner::Get().Add(
+		79,
+		[=](int x, int y) -> SpriteEntity *{
+			return PrimitiveHolder::Get().CreateTransportPipe1(x, y);
 		}
-		else {
-			//std::cout << "Press down to go inside the pipe :)" << std::endl;
+	);
+	EntitySpawner::Get().Add(
+		103,
+		[=](int x, int y) -> SpriteEntity * {
+			return PrimitiveHolder::Get().CreateTransportPoint(x, y);
 		}
-	};
-	CollisionChecker::GetSingleton().Register(supermario->GetSelf(), first_pipe->GetSprite(), pipeF);
+	);
+	EntitySpawner::Get().Add(
+		81,
+		[=](int x, int y) -> SpriteEntity * {
+		return PrimitiveHolder::Get().CreateTransportPipe2(x, y);
+	}
+	);
 
-
-	return_first_pipe = new Pipe(896, 112, AnimationFilmHolder::Get().GetFilm("green.pipe.left"), "pipe");
-	SpriteManager::GetSingleton().Add((return_first_pipe->GetSprite()));
-	std::function<void(Sprite* s1, Sprite* s2)> pipeReturn = [](Sprite* s1, Sprite* s2) {
-		ALLEGRO_KEYBOARD_STATE key;
-		al_get_keyboard_state(&key);
-		std::cout << supermario->GetSelf()->GetBox().y + supermario->GetSelf()->GetBox().h << "   ";
-		std::cout << "Panw " << return_first_pipe->GetSprite()->GetBox().y << "   ";
-		std::cout << "Katw  " << return_first_pipe->GetSprite()->GetBox().y << std::endl;
-		if (al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled() 
-			 && supermario->GetSelf()->GetBox().y + 
-				supermario->GetSelf()->GetBox().h > 
-				return_first_pipe->GetSprite()->GetBox().y + 16
-			) {
-			std::cout << "I GO LEFTTTTTTTTT" << std::endl;
-			MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
-			MovingAnimator* pipe_animator = new MovingAnimator();
-			pipe_animator->SetOnAction(
-				[=](Animator* animator, const Animation &anim_ref) {
-					supermario->GetSelf()->Move(1, 0);
-				}
-			);
-			pipe_animator->SetOnStart(
-				[=](Animator* animator) {
-					supermario->SetInput(false);
-					supermario->GetSelf()->SetHasDirectMotion(true);
-				}
-			);
-			pipe_animator->SetOnFinish(
-				[=](Animator* animator) {
-					supermario->GetSelf()->SetPos(176, 96);
-					supermario->GetSelf()->Move(0, 0);
-					cameraMover.SetRightMost(supermario->GetSelf()->GetBox().x);
-					myTile.viewWin.dimensions.x = supermario->GetSelf()->GetBox().x - 48;
-					supermario->SetInput(true);
-					supermario->GetSelf()->SetHasDirectMotion(false);
-				}
-			);
-			pipe_animator->Start(pipe_anim, SystemClock::Get().micro_secs());
-		}
-		else {
-			std::cout << "Press down to go inside the pipe :)" << std::endl;
-		}
-	};
-
-	CollisionChecker::GetSingleton().Register(supermario->GetSelf(), return_first_pipe->GetSprite(), pipeReturn);
 }
 
 void initializeAnimationsAndSprites() {
@@ -327,9 +244,6 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	assert(supermario);
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), supermario->GetSelf()->GetBox().x);
 	EntityHolder::Get().SetSuperMario(supermario);
-
-	//pipes kodikas
-	pipeShowcase();
 
 	while (1) {
 		ALLEGRO_EVENT ev;
