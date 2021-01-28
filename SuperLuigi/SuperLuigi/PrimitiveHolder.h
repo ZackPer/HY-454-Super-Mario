@@ -194,6 +194,25 @@ public:
 		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), return_first_pipe->GetSelf(), pipeReturn);
 		return return_first_pipe;
 	}
+	SpriteEntity *CreateCoin(int x, int y) {
+		SimpleEntity *coin = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("coin.idle"), "coin");
+		coin->GetSelf()->SetVisibility(true);
+		FrameRangeAnimation *frameAnimation = new FrameRangeAnimation("coin.idle", 0, 3, 0, 0, 0, 250000);
+		FrameRangeAnimator *frameAnimator = new FrameRangeAnimator();
+		frameAnimator->Start(coin->GetSelf(), frameAnimation, SystemClock::Get().micro_secs());
+
+		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
+			EntityHolder::Get().GetSuperMario()->AddPoints(100);
+
+			coin->SetVisibility(false);
+			SimpleEntity *coinEntity = (SimpleEntity *)EntityHolder::Get().GetSpriteEntity(coin);
+			EntityHolder::Get().Remove(coinEntity);
+			CollisionChecker::GetSingleton().Cancel(coin);
+		};
+		CollisionChecker::GetSingleton().Register(EntityHolder::Get().GetSuperMario()->GetSelf(), coin->GetSelf(), onCollision);
+
+		return coin;
+	}
 
 	void SetMyGrid(GridLayer *myGrid) {
 		this->myGrid = myGrid;

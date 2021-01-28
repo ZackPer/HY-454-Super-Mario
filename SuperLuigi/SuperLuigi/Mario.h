@@ -203,6 +203,16 @@ public:
 		return InputEnabled;
 	}
 
+	int GetPoints() {
+		return points;
+	}
+	void SetPoints(int points){
+		this->points = points;
+	}
+	void AddPoints(int amount) {
+		this->points += amount;
+	}
+
 protected:
 	GridLayer			*myGrid;
 	Rect				*viewWindow;
@@ -215,6 +225,7 @@ protected:
 	MarioMover*			selfMover;
 	GrowerAndShrinker*	growerAndShrinker;
 	bool				InputEnabled;
+	int					points;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);
