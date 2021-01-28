@@ -268,12 +268,13 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			if (supermario->animationState != GROWING && supermario->animationState != DYING)
 				supermario->GetselfMover()->Move(supermario->direction, supermario->isRunning, supermario->isSuper, supermario->looking, supermario->animationState);
 
+
 			al_draw_text(font, al_map_rgb(255, 255, 255), 50, 30, ALLEGRO_ALIGN_CENTER, "SCORE");
-			al_draw_text(font, al_map_rgb(255, 255, 255), 50, 70, ALLEGRO_ALIGN_CENTER, "O");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 50, 70, ALLEGRO_ALIGN_CENTER, supermario->GetScore().c_str());
 			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 30, ALLEGRO_ALIGN_CENTER, "COINS");
-			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 70, ALLEGRO_ALIGN_CENTER, "O");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 70, ALLEGRO_ALIGN_CENTER, supermario->GetCoins().c_str());
 			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 30, ALLEGRO_ALIGN_CENTER, "LIVES");
-			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 70, ALLEGRO_ALIGN_CENTER, "O");
+			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 70, ALLEGRO_ALIGN_CENTER, supermario->GetLives().c_str());
 			al_flip_display();
 
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());

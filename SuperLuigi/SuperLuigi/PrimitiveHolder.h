@@ -202,8 +202,12 @@ public:
 		frameAnimator->Start(coin->GetSelf(), frameAnimation, SystemClock::Get().micro_secs());
 
 		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
-			EntityHolder::Get().GetSuperMario()->AddPoints(100);
 
+			EntityHolder::Get().GetSuperMario()->AddPoints(100);
+			EntityHolder::Get().GetSuperMario()->AddCoin(100);
+			if (std::stoi(EntityHolder::Get().GetSuperMario()->GetCoins()) >= 2) {
+				EntityHolder::Get().GetSuperMario()->CoinsToLives();
+			}
 			coin->SetVisibility(false);
 			SimpleEntity *coinEntity = (SimpleEntity *)EntityHolder::Get().GetSpriteEntity(coin);
 			EntityHolder::Get().Remove(coinEntity);

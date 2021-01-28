@@ -18,6 +18,7 @@ public:
 	Direction direction = NO, looking = RIGHT;
 	Star star;
 
+
 	Mario() = default;
 	Mario(int x, int y, GridLayer *myGrid, Rect *viewWindow) 
 		: SpriteEntity(x, y, AnimationFilmHolder::Get().GetFilm("littlemario.walk.right"), "mario")
@@ -40,6 +41,10 @@ public:
 		growerAndShrinker = new GrowerAndShrinker(self);
 
 		InputEnabled = true;
+		score = 0;
+		lives = 3;
+		coins = 0;
+
 	}
 
 	void InputPoll() {
@@ -204,13 +209,42 @@ public:
 	}
 
 	int GetPoints() {
-		return points;
+		return score;
 	}
 	void SetPoints(int points){
-		this->points = points;
+		this->score = points;
 	}
 	void AddPoints(int amount) {
-		this->points += amount;
+		this->score += amount;
+	}
+
+	void AddCoin(int _coin) {
+		this->coins += _coin;
+	}
+	
+	void AddLives(int _lives) {
+		this->lives += _lives;
+	}
+
+	void CoinsToLives() {
+		this->AddLives(1);
+		this->lives++;
+		this->coins = 0;
+	}
+
+	std::string GetScore() {
+		std::string _score = std::to_string(score);
+		return _score;
+	}
+
+	std::string GetCoins() {
+		std::string _coins = std::to_string(coins);
+		return _coins;
+	}
+
+	std::string GetLives() {
+		std::string _lives = std::to_string(lives);
+		return _lives;
 	}
 
 protected:
@@ -225,7 +259,9 @@ protected:
 	MarioMover*			selfMover;
 	GrowerAndShrinker*	growerAndShrinker;
 	bool				InputEnabled;
-	int					points;
+	int					lives;
+	int					coins;
+	int					score;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);
