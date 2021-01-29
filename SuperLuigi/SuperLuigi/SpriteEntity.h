@@ -58,6 +58,7 @@ public:
 
 	void SetOnDeath(OnDeath onDeath) {
 		this->onDeath = onDeath;
+
 	}
 
 	void SetTpe(std::string type) {

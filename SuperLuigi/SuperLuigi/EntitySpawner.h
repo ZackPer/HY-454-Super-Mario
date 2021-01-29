@@ -49,7 +49,12 @@ public:
 			for (int i = 0; i < tileSetIndexMap.size(); i++) {
 				int tileLayerId = tileSetIndexMap[i][j];
 				if (keySet.find(tileLayerId) != keySet.end()) {
-					PrimitiveCallback primitiveCallback = map[tileLayerId];											
+					PrimitiveCallback primitiveCallback = map[tileLayerId];			
+					if (tileLayerId == 103) {
+						primitiveCallback(j * 16, i * 16);
+						myTile.TileMapIndexes[i][j] = 20512;
+						continue;
+					}
 					spawnPoints.push_back({Point(j * 16, i * 16), primitiveCallback});
 					MakeBrickTilesSolid(tileLayerId, i, j, myGrid);
 					myTile.TileMapIndexes[i][j] = 20512; //Code for background sky

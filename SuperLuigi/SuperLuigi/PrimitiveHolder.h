@@ -21,7 +21,9 @@ class PrimitiveHolder {
 public:
 	using PrimitiveCallback = std::function<SpriteEntity *(int x, int y)>;
 	using CollisionCallback = std::function<void(Sprite *s1, Sprite *s2)>;
+	using ShowTextCallback = std::vector < std::function<void()>>;
 
+	ShowTextCallback showText;
 	//Singleton Structure
 	static PrimitiveHolder& Get() {
 		static PrimitiveHolder singleton;
@@ -46,6 +48,7 @@ public:
 		goomba->SetWalkRight(walk);
 		goomba->SetOnDeath(
 			goomba->Prepare_DefaultOnDeath(goomba, death)
+
 		);
 		goomba->StartMoving();
 		goomba->SetSpeed(1);
@@ -99,7 +102,10 @@ public:
 		first_pipe->GetSelf()->SetVisibility(true);
 		//set up collision with our mario
 		Mario *supermario = EntityHolder::Get().GetSuperMario();
-		std::function<void(Sprite* s1, Sprite* s2)> pipeF = [first_pipe, supermario](Sprite* s1, Sprite* s2) {
+
+		ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_pipe.wav");
+
+		std::function<void(Sprite* s1, Sprite* s2)> pipeF = [first_pipe, supermario, soundEf](Sprite* s1, Sprite* s2) {
 			ALLEGRO_KEYBOARD_STATE key;
 			al_get_keyboard_state(&key);
 			
@@ -121,13 +127,14 @@ public:
 					[=](Animator* animator) {
 						supermario->SetInput(false);
 						supermario->GetSelf()->SetHasDirectMotion(true);
+						al_play_sample(soundEf, 0.3, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 					}
 				);
 				pipe_animator->SetOnFinish(
 					[=](Animator* animator) {
 						extern CameraMover cameraMover;
-						auto results = EntityHolder::Get().FindByType("transportPoint");
-						if (results.size() == 1) {
+						auto results = EntityHolder::Get().FindBySpriteTypeId("transportPoint");
+						if (results.size() > 0) {
 							SimpleEntity *transportPoint = (SimpleEntity *)results[0];
 							Rect box = transportPoint->GetSelf()->GetBox();
 							supermario->GetSelf()->SetPos(box.x, box.y);
@@ -163,6 +170,7 @@ public:
 			al_get_keyboard_state(&key);
 			auto marioBox = supermario->GetSelf()->GetBox();
 			auto pipeBox = return_first_pipe->GetSelf()->GetBox();
+			ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_pipe.wav");
 			if (
 				al_key_down(&key, ALLEGRO_KEY_RIGHT) && supermario->GetInputEnabled()
 				&& marioBox.y + marioBox.h > pipeBox.y + 16
@@ -179,6 +187,7 @@ public:
 					[=](Animator* animator) {
 						supermario->SetInput(false);
 						supermario->GetSelf()->SetHasDirectMotion(true);
+						al_play_sample(soundEf, 0.5, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 					}
 				);
 				pipe_animator->SetOnFinish(
@@ -211,9 +220,21 @@ public:
 		FrameRangeAnimator *frameAnimator = new FrameRangeAnimator();
 		frameAnimator->Start(coin->GetSelf(), frameAnimation, SystemClock::Get().micro_secs());
 
+		ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_coin.wav");
 		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
-			EntityHolder::Get().GetSuperMario()->AddPoints(100);
+			ALLEGRO_FONT* font = al_load_ttf_font("SuperPlumberBrothers.ttf", 32, NULL);
+			std::cout << y << std::endl;
+			std::cout << coin->GetBox().x << "  " << coin->GetBox().y << std::endl;
+			showText.push_back([=] {
+				al_draw_text(font, al_map_rgb(255, 255, 255), x+x, y+y+y/2, ALLEGRO_ALIGN_CENTER, "100");
+			});
 
+			al_play_sample(soundEf, 0.5, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
+			EntityHolder::Get().GetSuperMario()->AddPoints(100);
+			EntityHolder::Get().GetSuperMario()->AddCoin(1);
+			if (std::stoi(EntityHolder::Get().GetSuperMario()->GetCoins()) >= 100) {
+				EntityHolder::Get().GetSuperMario()->CoinsToLives();
+			}
 			coin->SetVisibility(false);
 			SimpleEntity *coinEntity = (SimpleEntity *)EntityHolder::Get().GetSpriteEntity(coin);
 			EntityHolder::Get().Remove(coinEntity);
@@ -309,6 +330,7 @@ private:
 
 std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity) {
 	return [entity]() {
+		EntityHolder::Get().GetSuperMario()->AddPoints(100);
 		entity->StopMoving();
 		entity->GetSelf()->SetVisibility(false);
 		EntityHolder::Get().Remove(entity);
@@ -321,7 +343,7 @@ std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity,
 	return [entity, deathAnimation]() {
 		entity->StopMoving();
 		EntityHolder::Get().Remove(entity);
-
+		EntityHolder::Get().GetSuperMario()->AddPoints(100);
 		CollisionChecker::GetSingleton().Cancel(entity->GetSelf());
 		FrameRangeAnimator	*deathAnimator = new FrameRangeAnimator();
 		deathAnimator->SetOnFinish(
