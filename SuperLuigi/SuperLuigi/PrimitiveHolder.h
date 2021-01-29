@@ -43,7 +43,7 @@ public:
 	}
 	SpriteEntity *CreateGoomba(int x, int y) {
 		MovingEntity *goomba = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", myGrid);
-		goomba->SetTpe("enemy");
+		goomba->SetType("enemy");
 		FrameRangeAnimation walk = FrameRangeAnimation("goomba.walk", 0, 2, 0, 0, 0, 300000);
 		FrameRangeAnimation *death = new FrameRangeAnimation("goomba.death", 0, 1, 1, 0, 0, 400000);
 		goomba->SetWalkLeft(walk);
@@ -328,7 +328,7 @@ private:
 	
 	SpriteEntity *CreateKoopa(int x, int y, std::string color) {
 		MovingEntity *koopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm(color + ".koopa.walk.left"), color + ".koopa", myGrid);
-		koopa->SetTpe("enemy");
+		koopa->SetType("enemy");
 		FrameRangeAnimation walkLeft = FrameRangeAnimation(color + ".koopa.walk.left", 0, 2, 0, 0, 0, 300000);
 		FrameRangeAnimation walkRight = FrameRangeAnimation(color + ".koopa.walk.right", 0, 2, 0, 0, 0, 300000);
 

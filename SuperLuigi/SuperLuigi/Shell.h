@@ -6,6 +6,9 @@
 #include "Engine/Physics/CollisionHander.h"
 #include "MovingEntity.h"
 #include "EntityHolder.h"
+#include "PrimitiveHolder.h"
+
+void DeathJump(MovingEntity* entity);
 
 class Shell : MovingEntity {
 public:
@@ -41,19 +44,22 @@ public:
 			//This is used as a ticking bomb; After 0.5 seconds collide wwith all.
 			MovingAnimation *animation = new MovingAnimation("", 1, 0, 0, 300000);
 			MovingAnimator  *animator = new MovingAnimator();
-			
 			animator->SetOnAction(
 				[self](Animator *animator, const Animation& animation) {
-					CollisionCallback killOnCollide = [](Sprite *shell, Sprite *sprite) {
-						SpriteEntity *entity= EntityHolder::Get().GetSpriteEntity(sprite);
-						entity->Die();
+					CollisionCallback deathOnCollide = [](Sprite *shell, Sprite *sprite) {
+						Mario *mario = (Mario *)EntityHolder::Get().GetSuperMario();
+						mario->Die();
 					};
-					auto spriteList = SpriteManager::GetSingleton().GetDisplayList();
-					auto asd = EntityHolder::Get().GetEntityList();
-					self->GetSelf();
-					for (auto &it : EntityHolder::Get().GetEntityList())
-						if (self != it)
-							CollisionChecker::GetSingleton().Register(self->GetSelf(), it->GetSelf(), killOnCollide);
+					CollisionCallback deathJumpOnCollide = [](Sprite *shell, Sprite *sprite) {
+						MovingEntity *entity= (MovingEntity *)EntityHolder::Get().GetSpriteEntity(sprite);
+						DeathJump(entity);
+					};
+					Mario *supermario = EntityHolder::Get().GetSuperMario();
+					for (auto &it : EntityHolder::Get().FindByType("enemy"))
+						if (self != it && supermario != it)
+							CollisionChecker::GetSingleton().Register(self->GetSelf(), it->GetSelf(), deathJumpOnCollide);
+
+					CollisionChecker::GetSingleton().Register(self->GetSelf(), supermario->GetSelf(), deathOnCollide);
 				}
 			);
 			animator->Start(animation, SystemClock::Get().micro_secs());

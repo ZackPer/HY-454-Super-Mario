@@ -12,7 +12,6 @@
 #include "Modules/DeathModule.h"
 
 
-
 extern TileLayer myTile;
 extern CameraMover cameraMover;
 class Mario : public SpriteEntity {
@@ -251,6 +250,7 @@ public:
 				return;
 			animationState = DYING;
 
+			CollisionChecker::GetSingleton().Cancel(this->GetSelf());
 			ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_mariodie.wav");
 			al_play_sample(soundEf, 0.5, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 			if (lives > 0) {
@@ -261,6 +261,10 @@ public:
 			jumpModule.Reset();
 			deathModule->Die();
 		}
+	}
+
+	bool IsDead() {
+		return deathModule->GetDead();
 	}
 
 	MarioMover* GetselfMover(){

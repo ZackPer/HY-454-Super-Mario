@@ -13,19 +13,18 @@ private:
 	MovingAnimator	animator;
 	MovingAnimation animation;
 	AnimationFilm*	film;
-	bool			dead;
+	bool			dead = false;
+	bool			hasFinished = false;
 	
 public:
 	//since only mario will have it, bad solution but okee
 	DeathModule(){}
 
 	DeathModule(Sprite* s);
-
-	bool			hasFinished;
-
-	void Die() {
-		sprite->SetCurrFilm(film);
-		sprite->SetFrame(0);
-		animator.Start(&animation, SystemClock::Get().micro_secs());
+	
+	bool GetDead() {
+		return dead;
 	}
+
+	void Die();
 };

@@ -66,7 +66,6 @@ namespace mario {
 			Allegro_Initilization();
 		}
 	protected:
-		Game game;
 		//+++
 	private:
 		ALLEGRO_DISPLAY* display;

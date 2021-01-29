@@ -34,6 +34,13 @@ public:
 	void Remove(SpriteEntity *entity) {
 		entityList.remove(entity);
 	}
+	void ClearAll() {
+		for (auto &it : entityList) {
+			if (it != supermario)
+				it->GetSelf()->SetVisibility(false);
+		}
+		entityList.clear();
+	}
 	SpriteEntity *GetSpriteEntity(Sprite *sprite) {
 		for (auto &it : entityList)
 			if (it->GetSelf() == sprite)
@@ -75,7 +82,9 @@ DeathModule::DeathModule(Sprite* s) {
 	hasFinished = false;
 	dead = false;
 	sprite = s;
+}
 
+void DeathModule::Die() {
 	film = AnimationFilmHolder::Get().GetFilm("mario.death");
 	animation = MovingAnimation(
 		"mario.death",
@@ -87,35 +96,36 @@ DeathModule::DeathModule(Sprite* s) {
 
 	animator.SetOnAction(
 		[=](Animator* animator, const Animation& anim) {
-			sprite->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
-		}
+		sprite->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
+	}
 	);
 
 	animator.SetOnFinish(
 		[=](Animator* animator) {
-			animation = MovingAnimation(
-				"mario.death",
-				5,
-				0,
-				5,
-				30000
-			);
+		animation = MovingAnimation(
+			"mario.death",
+			150,
+			0,
+			5,
+			30000
+		);
 
-			((MovingAnimator*)animator)->Start(&animation, SystemClock::Get().micro_secs());
-			animator->SetOnFinish(
-				[=](Animator* animator) {
-					animation = MovingAnimation(
-						"mario.death",
-						4,
-						0,
-						-8,
-						30000
-					);
-					EntityHolder::Get().GetSuperMario()->MoveToCheckPoint();
-				}
+		((MovingAnimator*)animator)->Start(&animation, SystemClock::Get().micro_secs());
+		animator->SetOnFinish(
+			[=](Animator* animator) {
+				dead = true;
+				//hasFinished = true;
+				EntityHolder::Get().GetSuperMario()->MoveToCheckPoint();
+				EntityHolder::Get().GetSuperMario()->GetSelf()->Move(1, 1);
+			}
+		);
 
-			);
-
-		}
+	}
 	);
+
+
+	sprite->SetCurrFilm(film);
+	sprite->SetFrame(0);
+	animator.Start(&animation, SystemClock::Get().micro_secs());
+	
 }

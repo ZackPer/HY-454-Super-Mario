@@ -67,7 +67,7 @@ public:
 
 	}
 
-	void SetTpe(std::string type) {
+	void SetType(std::string type) {
 		this->type = type;
 	}
 	std::string GetType() {
