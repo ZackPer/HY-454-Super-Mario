@@ -110,7 +110,7 @@ public:
 		jumpModule = j;	
 	}
 
-	void StartInfiniteJump() {
+	void StartJump(int times) {
 		jumpAnimator.SetOnAction(
 			[=](Animator* animator, const Animation& anim) {
 				if (!this->GetgravityModule().GetIsFalling() &&
@@ -120,7 +120,7 @@ public:
 				}
 			}
 		);
-		jumpAnimation = MovingAnimation("infiniteJump", 0, 0, 0, 16.667);
+		jumpAnimation = MovingAnimation("infiniteJump", times, 0, 0, 16667);
 		jumpAnimator.Start(&jumpAnimation, SystemClock::Get().micro_secs());
 	}
 

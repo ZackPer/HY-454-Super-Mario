@@ -249,6 +249,7 @@ public:
 	}
 	SpriteEntity* CreateSuperMushroom(int x, int y, Sprite* s) {
 		MovingEntity* mushroom = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("mushroom"), "mushroom", myGrid, s);
+		mushroom->SetTpe("powerup");
 		FrameRangeAnimation walk = FrameRangeAnimation("mushroom", 0, 1, 0, 0, 0, 300000);
 		FrameRangeAnimation* death = new FrameRangeAnimation("empty", 0, 1, 1, 0, 0, 400000);
 		mushroom->SetWalkLeft(walk);
@@ -260,6 +261,8 @@ public:
 		mushroom->SetSpeed(2);
 		mushroom->SetSign(1);
 		mushroom->SetEdgeDetection(false);
+
+		InitiateJumpModule(mushroom, s);
 
 		Mario* supermario = EntityHolder::Get().GetSuperMario();
 		CollisionChecker::GetSingleton().Register(
@@ -282,6 +285,7 @@ public:
 		MovingEntity* star = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("star"), "star", myGrid, s);
 		FrameRangeAnimation walk = FrameRangeAnimation("star", 0, 1, 0, 0, 0, 300000);
 		FrameRangeAnimation* death = new FrameRangeAnimation("empty", 0, 1, 1, 0, 0, 400000);
+		star->SetTpe("powerup");
 		star->SetWalkLeft(walk);
 		star->SetWalkRight(walk);
 		star->SetOnDeath(
@@ -293,7 +297,7 @@ public:
 		star->SetEdgeDetection(false);
 
 		InitiateJumpModule(star, s);
-		star->StartInfiniteJump();
+		star->StartJump(0);
 
 		Mario* supermario = EntityHolder::Get().GetSuperMario();
 		CollisionChecker::GetSingleton().Register(
@@ -410,6 +414,8 @@ std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity)
 }
 
 void DeathJump(MovingEntity* entity) {
+	entity->GetSelf()->SetZorder(6);
+
 	if (entity->GetSelf()->GetTypeId() == "goomba") {
 		entity->GetSelf()->setCurrFilm(AnimationFilmHolder::Get().GetFilm("goomba.jump.death"));
 	}
