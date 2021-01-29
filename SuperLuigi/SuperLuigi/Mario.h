@@ -17,11 +17,11 @@ extern TileLayer myTile;
 extern CameraMover cameraMover;
 class Mario : public SpriteEntity {
 public:
-	bool isSuper = false;
+
 	bool isRunning = false;
 	AnimationState animationState = WALKING;
 	Direction direction = NO, looking = RIGHT;
-	Star star;
+	StarAnimation starAnimation;
 
 
 	Mario() = default;
@@ -98,7 +98,7 @@ public:
 			ALLEGRO_KEYBOARD_STATE keyState;
 			al_get_keyboard_state(&keyState);
 			if (animationState != DYING && animationState != GROWING) {
-				star.EveryXMilliSecs(SystemClock::Get().milli_secs(), 10000, self);
+				SethasStar(starAnimation.Update(SystemClock::Get().milli_secs(), 10000, self));
 				//jumping
 				if (al_key_down(&keyState, ALLEGRO_KEY_UP) &&
 					!gravityModule.GetIsFalling() &&
@@ -115,7 +115,8 @@ public:
 
 				if (al_key_down(&keyState, ALLEGRO_KEY_3))
 				{
-					star.StartTheCount(SystemClock::Get().milli_secs());
+					SethasStar(true);
+					starAnimation.StartAnimation(SystemClock::Get().milli_secs());
 				}
 
 				//moving and running
@@ -172,12 +173,14 @@ public:
 			[=](Animator* animator) {
 				SuperChangeFilms(false, dir);
 				animationState = WALKING;
+				isInvunerable = false;
 			}
 		);
 		self->SetBoundingArea();
 	}
 
 	void Grow(Direction dir) {
+		isInvunerable = true;
 		animationState = GROWING;
 		selfMover->StopAllAnimators();
 		growerAndShrinker->Grow(dir);
@@ -185,6 +188,7 @@ public:
 			[=](Animator* animator) {
 				SuperChangeFilms(true, dir);
 				animationState = WALKING;
+				isInvunerable = false;
 			}
 		);
 		self->SetBoundingArea();
@@ -219,11 +223,7 @@ public:
 		}
 	}
 
-	void ChangeInvincible(bool b) {
-
-	}
-
-	bool GetSuper() {
+	bool GetisSuper() {
 		return isSuper;
 	}
 
@@ -242,18 +242,25 @@ public:
 	}
 
 	void Die() {
-		if (animationState != DYING) {
+		if (isSuper && !isInvunerable) {
+			isInvunerable = true;
+			Shrink(looking);
+		}		
+		else if(!isSuper && !isInvunerable){
+			if (animationState == DYING)
+				return;
+			animationState = DYING;
+
 			ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_mariodie.wav");
 			al_play_sample(soundEf, 0.5, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 			if (lives > 0) {
 				this->lives--;
 			}
+			selfMover->StopAllAnimators();
+			jumpingFrameAnimator.Stop();
+			jumpModule.Reset();
+			deathModule->Die();
 		}
-		animationState = DYING;
-		selfMover->StopAllAnimators();
-		jumpingFrameAnimator.Stop();
-		jumpModule.Reset();
-		deathModule->Die();
 	}
 
 	MarioMover* GetselfMover(){
@@ -306,6 +313,17 @@ public:
 		return _lives;
 	}
 
+	void SethasStar(bool b) {
+		hasStar = b;
+	};
+
+	bool GethasStar() {
+		return hasStar;
+	};
+
+	StarAnimation& Getstar() {
+		return starAnimation;
+	}
 protected:
 	GridLayer			*myGrid;
 	Rect				*viewWindow;
@@ -334,6 +352,9 @@ protected:
 	FrameRangeAnimation supermarioJumpingLeft;
 	FrameRangeAnimation supermarioJumpingRight;
 	FrameRangeAnimator	jumpingFrameAnimator;
+	bool				isSuper = false;
+	bool				hasStar = false;
+	bool				isInvunerable = false;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);

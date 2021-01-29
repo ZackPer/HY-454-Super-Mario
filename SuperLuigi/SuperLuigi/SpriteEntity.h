@@ -18,6 +18,12 @@ public:
 		this->type = typeId;
 	}
 
+	SpriteEntity(int x, int y, AnimationFilm* film, std::string typeId, Sprite* s) {
+		self = s;
+		self->SetBoundingArea();
+		self->SetRange(1, 1);
+	}
+
 	// Sets self mover to be the default mover.
 	void SetMover(GridLayer *myGrid) {
 		self->SetMover(self->MakeSpriteGridLayerMover(myGrid, self));
@@ -66,6 +72,10 @@ public:
 	}
 	std::string GetType() {
 		return this->type;
+	}
+
+	GravityModule& GetgravityModule() {
+		return gravityModule;
 	}
 
 protected:

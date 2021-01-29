@@ -217,8 +217,6 @@ private:
 		return tileMapIndexes.size() * TILE_HEIGHT;
 	}
 
-
-
 	Index GetTile(TileMap TileMapIndexes, Dim col, Dim row)
 	{
 		return TileMapIndexes[row][col];

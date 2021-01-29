@@ -16,6 +16,8 @@
 #include "Mario.h"
 #include "PiranhaPlant.h"
 
+
+void DeathJump(MovingEntity* entity);
 // Singleton class that holds all the primitive callback functions for entity creation.
 class PrimitiveHolder {
 public:
@@ -54,6 +56,7 @@ public:
 		goomba->SetSpeed(1);
 		goomba->SetEdgeDetection(false);
 
+		InitiateJumpModule(goomba, goomba->GetSelf());
 		PrepareEnemyColliders(goomba);
 
 		EntityHolder::Get().Add(goomba);
@@ -244,13 +247,80 @@ public:
 
 		return coin;
 	}
+	SpriteEntity* CreateSuperMushroom(int x, int y, Sprite* s) {
+		MovingEntity* mushroom = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("mushroom"), "mushroom", myGrid, s);
+		FrameRangeAnimation walk = FrameRangeAnimation("mushroom", 0, 1, 0, 0, 0, 300000);
+		FrameRangeAnimation* death = new FrameRangeAnimation("empty", 0, 1, 1, 0, 0, 400000);
+		mushroom->SetWalkLeft(walk);
+		mushroom->SetWalkRight(walk);
+		mushroom->SetOnDeath(
+			mushroom->Prepare_DefaultOnDeath(mushroom, death)
+		);
+		mushroom->StartMoving();
+		mushroom->SetSpeed(2);
+		mushroom->SetSign(1);
+		mushroom->SetEdgeDetection(false);
 
+		Mario* supermario = EntityHolder::Get().GetSuperMario();
+		CollisionChecker::GetSingleton().Register(
+			supermario->GetSelf(),
+			mushroom->GetSelf(),
+			[=](Sprite* s1, Sprite* s2) {
+				Mario* supermario = EntityHolder::Get().GetSuperMario();
+				mushroom->Die();
+				supermario->Grow(supermario->looking);
+			}
+		);
 
+		EntityHolder::Get().Add(mushroom);
+		return mushroom;
+	}
+	SpriteEntity* CreateLifeMushroom(int x, int y) {
+
+	}
+	SpriteEntity* CreateStar(int x, int y, Sprite* s) {
+		MovingEntity* star = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("star"), "star", myGrid, s);
+		FrameRangeAnimation walk = FrameRangeAnimation("star", 0, 1, 0, 0, 0, 300000);
+		FrameRangeAnimation* death = new FrameRangeAnimation("empty", 0, 1, 1, 0, 0, 400000);
+		star->SetWalkLeft(walk);
+		star->SetWalkRight(walk);
+		star->SetOnDeath(
+			star->Prepare_DefaultOnDeath(star, death)
+		);
+		star->StartMoving();
+		star->SetSpeed(2);
+		star->SetSign(1);
+		star->SetEdgeDetection(false);
+
+		InitiateJumpModule(star, s);
+		star->StartInfiniteJump();
+
+		Mario* supermario = EntityHolder::Get().GetSuperMario();
+		CollisionChecker::GetSingleton().Register(
+			supermario->GetSelf(),
+			star->GetSelf(),
+			[=](Sprite* s1, Sprite* s2) {
+				Mario* supermario = EntityHolder::Get().GetSuperMario();
+				star->Die();
+				supermario->SethasStar(true);
+				supermario->starAnimation.StartAnimation(SystemClock::Get().milli_secs());
+			}
+		);
+
+		EntityHolder::Get().Add(star);
+		return star;
+	}
 	void SetMyGrid(GridLayer *myGrid) {
 		this->myGrid = myGrid;
 	}
 	void SetViewWindow(Rect *viewWindow) {
 		this->viewWindow = viewWindow;
+	}
+
+	void InitiateJumpModule(MovingEntity* entity, Sprite* s) {
+		entity->SetJumpModule(new JumpModule(s));
+		entity->GetjumpModule()->SetIsFalling(entity->GetgravityModule().GetIsFallingRef());
+		entity->GetjumpModule()->Init();
 	}
 private:
 	GridLayer	*myGrid;
@@ -282,7 +352,6 @@ private:
 		return koopa;
 	}
 
-
 	void PrepareEnemyColliders(SpriteEntity *entity) {
 		auto enemies = EntityHolder::Get().FindByType("enemy");
 		for (auto &it : enemies) {
@@ -297,12 +366,11 @@ private:
 		}
 
 		Mario *mario = EntityHolder::Get().GetSuperMario();
-		auto onMarioCollision = PrepareKillBounce(mario, entity);
-		CollisionChecker::GetSingleton().Register(mario->GetSelf(), entity->GetSelf(), onMarioCollision);
+		CollisionChecker::GetSingleton().Register(mario->GetSelf(), entity->GetSelf(), PrepareKillBounce(mario, entity));
 	}
 	CollisionCallback PrepareDeathFromShell(MovingEntity *shell, MovingEntity *entity) {
 		return [shell, entity](Sprite *s1, Sprite *s2) {
-			//entity->RadikiaAnapoda();
+			DeathJump(entity);
 		};
 	}
 	CollisionCallback PrepareEnemySignChange(MovingEntity *enemy1, MovingEntity *enemy2) {
@@ -316,7 +384,10 @@ private:
 			Mario *supermario = EntityHolder::Get().GetSuperMario();
 			Rect marioBox = s1->GetBox();
 			Rect entityBox = s2->GetBox();
-			if (marioBox.y + marioBox.h < entityBox.y + 5) {
+			if (supermario->GethasStar()) {
+				DeathJump((MovingEntity*)entity);
+			}	
+			else if (marioBox.y + marioBox.h < entityBox.y + 5) {
 				entity->Die();
 				supermario->Bounce();
 			}
@@ -327,7 +398,6 @@ private:
 	}
 };
 
-
 std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity) {
 	return [entity]() {
 		EntityHolder::Get().GetSuperMario()->AddPoints(100);
@@ -337,6 +407,64 @@ std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity)
 		CollisionChecker::GetSingleton().Cancel(entity->GetSelf());
 		SpriteManager::GetSingleton().Remove(entity->GetSelf());
 	};
+}
+
+void DeathJump(MovingEntity* entity) {
+	if (entity->GetSelf()->GetTypeId() == "goomba") {
+		entity->GetSelf()->setCurrFilm(AnimationFilmHolder::Get().GetFilm("goomba.jump.death"));
+	}
+	else if (entity->GetSelf()->GetTypeId() == "red.koopa") {
+		entity->GetSelf()->setCurrFilm(AnimationFilmHolder::Get().GetFilm("red.koopa.jump.death"));
+	}
+	else if (entity->GetSelf()->GetTypeId() == "green.koopa") {
+		entity->GetSelf()->setCurrFilm(AnimationFilmHolder::Get().GetFilm("green.koopa.jump.death"));
+	}
+	entity->GetSelf()->SetFrame(0);
+	entity->GetSelf()->SetFrame(1);
+
+	entity->SetjumpAnimation(MovingAnimation(
+		"jump.death",
+		8,
+		0,
+		-2,
+		30000
+	));
+	entity->GetjumpAnimator().SetOnAction(
+		[=](Animator* animator, const Animation& anim) {
+			entity->GetSelf()->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
+		}
+	);
+	entity->GetjumpAnimator().SetOnStart(
+		[=](Animator* animator) {
+			CollisionChecker::GetSingleton().Cancel(entity->GetSelf());
+		}
+	);
+	entity->GetjumpAnimator().SetOnFinish(
+		[=](Animator* animator) {
+			entity->SetjumpAnimation(MovingAnimation(
+				"jump.death",
+				0,
+				0,
+				5,
+				30000
+			));
+			((MovingAnimator*)animator)->Start(entity->GetjumpAnimationPtr(), SystemClock::Get().micro_secs());
+			entity->GetjumpAnimator().SetOnFinish(
+				[=](Animator* animator) {
+					entity->GetjumpAnimator().SetOnStart(
+						[=](Animator* animator) {
+							nullptr;
+						}
+					);
+					entity->StopMoving();
+					entity->GetSelf()->SetVisibility(false);
+					EntityHolder::Get().Remove(entity);
+					SpriteManager::GetSingleton().Remove(entity->GetSelf());
+				}
+			);
+		}
+	);
+	entity->GetjumpAnimator().Start(entity->GetjumpAnimationPtr(), SystemClock::Get().micro_secs());
 }
 
 std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity, FrameRangeAnimation *deathAnimation) {

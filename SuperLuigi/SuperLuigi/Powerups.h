@@ -115,14 +115,14 @@ class SuperMushroom {
 	
 };
 
-class Star {
+class StarAnimation {
 	std::vector<ALLEGRO_COLOR> frameColors, basicColor;
 	int frame;
 	bool started, changeFrameColor = false;
 	uint64_t startTime;
 
 public:
-	Star() {
+	StarAnimation() {
 		frame = 0;
 		frameColors.push_back(al_map_rgba_f(1, 1, 1, 1)); 
 		frameColors.push_back(al_map_rgba_f(0, 1, 0.5, 0.5));
@@ -130,7 +130,7 @@ public:
 		frameColors.push_back(al_map_rgba_f(0.5, 0.5, 0.5, 0.8));
 	}
 
-	void StartTheCount(uint64_t time) {
+	void StartAnimation(uint64_t time) {
 		started = true;
 		startTime = time;
 	}
@@ -142,20 +142,24 @@ public:
 				frame = 0;				
 	}
 
-	void EveryXMilliSecs(uint64_t time, uint64_t X, Sprite* s) {
-		if (!started) return;
+	//If mario has the star, changes tint for the animation
+	//returns whether mario has the star or not
+	bool Update(uint64_t time, uint64_t X, Sprite* s) {
+		if (!started) return false;
 		
 		changeFrameColor = !changeFrameColor;
-		if (changeFrameColor) {
-			ChangeSpriteTint(s);
-		}
-		
+				
 		if (time - startTime > X) {
 			//stop the count
 			started = false;	
 			//set color to the basic one
 			s->SetTint(frameColors[0]);
+			return false;
 		}
+		else if (changeFrameColor) {
+			ChangeSpriteTint(s);
+		}
+		return true;
 
 	}
 
