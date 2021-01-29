@@ -449,7 +449,7 @@ int main() {
 	//allegro addons
 	IncludeAddons();
 
-	myTile = TileLayer("CSVMaps/map1.csv");
+	myTile = TileLayer("CSVMaps/testmap.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;

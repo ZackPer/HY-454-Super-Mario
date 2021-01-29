@@ -134,9 +134,9 @@ private:
 			else {
 				containedSpawnAnimation = MovingAnimation(
 					MysteryID + ".spawnAnimation",
-					8,
+					6,
 					0,
-					-2,
+					-3,
 					75000
 				);
 			}
@@ -221,6 +221,155 @@ public:
 };
 
 class BrickTile : public BlockSprite {
+private:
+	bool HitEntityFromBelow(Rect self, Rect entity) {
+		if (entity.y + entity.h == self.y) {
+			if (entity.x <= self.x + self.w && self.x + self.w <= entity.x + entity.w)
+				return true;
+		}
+		return false;
+	}
+
+	//for destruction
+	Sprite*	topRightSprite;
+	Sprite*	topLeftSprite;
+	Sprite*	bottomRightSprite;
+	Sprite*	bottomLeftSprite;
+
+	FrameRangeAnimator	topRightFramesAnimator;
+	FrameRangeAnimator	topLeftFramesAnimator;
+	FrameRangeAnimator	bottomRightFramesAnimator;
+	FrameRangeAnimator	bottomLeftFramesAnimator;
+
+	FrameRangeAnimation	topRightFramesAnimation;
+	FrameRangeAnimation	topLeftFramesAnimation;
+	FrameRangeAnimation	bottomRightFramesAnimation;
+	FrameRangeAnimation	bottomLeftFramesAnimation;
+
+	void SetOnBreakAnimatorFinish(FrameRangeAnimator* animator, FrameRangeAnimation* animation, Sprite* s, int dx, int dy, int reps) {
+		animator->SetOnFinish(
+			[=](Animator* anim) {
+				animation->SetDy(dy);
+				animation->SetDx(dx);
+				animation->SetReps(reps);
+				animator->Start(s, animation, SystemClock::Get().micro_secs());
+			}
+		);
+	}
+
+	void InitializePiecesSprites() {
+		topLeftSprite = new Sprite(
+			sprite->GetBox().x, 
+			sprite->GetBox().y, 
+			AnimationFilmHolder::Get().GetFilm("brokenbrick.topleft"), 
+			"brick.piece", 
+			4
+		);
+		topRightSprite = new Sprite(
+			sprite->GetBox().x + 8, 
+			sprite->GetBox().y, 
+			AnimationFilmHolder::Get().GetFilm("brokenbrick.topright"), 
+			"brick.piece", 
+			4
+		);
+		bottomLeftSprite = new Sprite(
+			sprite->GetBox().x, 
+			sprite->GetBox().y + 8, 
+			AnimationFilmHolder::Get().GetFilm("brokenbrick.bottomleft"), 
+			"brick.piece", 
+			4
+		);
+		bottomRightSprite = new Sprite(
+			sprite->GetBox().x + 8, 
+			sprite->GetBox().y + 8, 
+			AnimationFilmHolder::Get().GetFilm("brokenbrick.bottomright"), 
+			"brick.piece", 
+			4
+		);
+	} 
+
+	void InitializePiecesFrameAnimations() {
+		topRightFramesAnimation = FrameRangeAnimation(
+			"brick.destroy.topRight",
+			0,
+			4,
+			1,
+			4,
+			-8,
+			50000
+		);
+		topLeftFramesAnimation = FrameRangeAnimation(
+			"brick.destroy.topleft",
+			0,
+			4,
+			1,
+			-4,
+			-8,
+			50000
+		);
+	
+		bottomRightFramesAnimation = FrameRangeAnimation(
+			"brick.destroy.topRight",
+			0,
+			4,
+			1,
+			4,
+			-8,
+			50000
+		);
+		bottomLeftFramesAnimation = FrameRangeAnimation(
+			"brick.destroy.topRight",
+			0,
+			4,
+			1,
+			-4,
+			-8,
+			50000
+		);		
+
+		SetOnBreakAnimatorFinish(&topRightFramesAnimator, &topRightFramesAnimation, topRightSprite, 0, 8, 8);
+		SetOnBreakAnimatorFinish(&bottomRightFramesAnimator, &bottomRightFramesAnimation, bottomRightSprite, 0, 12, 8);
+		SetOnBreakAnimatorFinish(&topLeftFramesAnimator, &topLeftFramesAnimation, topLeftSprite, 0, 8, 8);
+		SetOnBreakAnimatorFinish(&bottomLeftFramesAnimator, &bottomLeftFramesAnimation, bottomLeftSprite, 0, 12, 8);
+
+		topRightFramesAnimator.SetOnAction(
+			[=](Animator* animator, const Animation& anim) {
+				topRightSprite->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
+			}
+		);
+
+		bottomRightFramesAnimator.SetOnAction(
+			[=](Animator* animator, const Animation& anim) {
+				bottomRightSprite->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
+			}
+		);
+
+		topLeftFramesAnimator.SetOnAction(
+			[=](Animator* animator, const Animation& anim) {
+				topLeftSprite->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
+			}
+		);
+
+		bottomLeftFramesAnimator.SetOnAction(
+			[=](Animator* animator, const Animation& anim) {
+				bottomLeftSprite->SetHasDirectMotion(true).Move(((const MovingAnimation&)anim).GetDx(), ((const MovingAnimation&)anim).GetDy()).SetHasDirectMotion(true);
+			}
+		);
+
+	}
+
+	void StartPiecesAnimators(){
+		topRightFramesAnimator.Start(topRightSprite, &topRightFramesAnimation, SystemClock::Get().micro_secs());
+		bottomRightFramesAnimator.Start(bottomRightSprite, &bottomRightFramesAnimation, SystemClock::Get().micro_secs());
+		topLeftFramesAnimator.Start(topLeftSprite, &topLeftFramesAnimation, SystemClock::Get().micro_secs());
+		bottomLeftFramesAnimator.Start(bottomLeftSprite, &bottomLeftFramesAnimation, SystemClock::Get().micro_secs());
+
+		topRightSprite->SetVisibility(true);
+		bottomRightSprite->SetVisibility(true);
+		topLeftSprite->SetVisibility(true);
+		bottomLeftSprite->SetVisibility(true);
+	}
+
 public:
 	BrickTile() {}
 
@@ -238,15 +387,35 @@ public:
 			}
 		);
 
+		InitializePiecesSprites();
+		InitializePiecesFrameAnimations();
+
 		action = [=](Sprite* mario, Sprite* self) {
 			if (mario->GetBox().h == 32) {
-				std::cout << "DESTROY" << std::endl;
 				EntitySpawner::Get().MakeBrickTileEmpty(self->GetBox().x, self->GetBox().y, (*myGrid));
 				self->SetVisibility(false);
+				StartPiecesAnimators();
 			}
-				
-			hitStartAnimator.Start(bouncingAnimation, SystemClock::Get().micro_secs());
+			else {			
+				hitStartAnimator.Start(bouncingAnimation, SystemClock::Get().micro_secs());
+			}
+			//kill enemies below
+			auto enemies = EntityHolder::Get().FindByType("enemy");
+			for (auto& it : enemies) {
+				if (HitEntityFromBelow(self->GetBox(), it->GetSelf()->GetBox())) {
+					DeathJump((MovingEntity*)it);
+				}
+			}
+			//bounce powerups
+			auto powerups = EntityHolder::Get().FindByType("powerup");
+			for (auto& it : powerups) {
+				if (HitEntityFromBelow(self->GetBox(), it->GetSelf()->GetBox())) {
+					((MovingEntity*)it)->StartJump(1);
+				}
+			}
 		};
+
+
 
 	}
 };

@@ -70,17 +70,17 @@ public:
 		RightWalkMoveAnimation = MovingAnimation(
 			walkRightFilm->GetId(),
 			0,
-			2,
+			1,
 			0,
-			25000
+			16667
 		);
 		
 		LeftWalkMoveAnimation = MovingAnimation(
 			walkLeftFilm->GetId(),
 			0,
-			-2,
+			-1,
 			0,
-			25000
+			16667
 		);
 		
 		//Frame Mario Animations & Animators
@@ -97,7 +97,7 @@ public:
 			0,
 			0,
 			0,
-			75000
+			50000
 		);
 
 		RightWalkFramesAnimation = FrameRangeAnimation(
@@ -107,7 +107,7 @@ public:
 			0,
 			0,
 			0,
-			75000
+			50000
 		);
 		
 		//Remaining Move Animations

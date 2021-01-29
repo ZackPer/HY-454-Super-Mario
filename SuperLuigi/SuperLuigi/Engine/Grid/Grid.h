@@ -93,7 +93,7 @@ private:
 		int x2_next = x2 + dx;
 		int t = MAX_PIXEL_WIDTH;
 		if (x2_next >= t)
-			dx = MAX_PIXEL_WIDTH - x2;
+			dx = MAX_PIXEL_WIDTH - x2 - 1;
 		else {
 			auto newCol = DIV_GRID_ELEMENT_WIDTH(x2_next);
 			auto currCol = DIV_GRID_ELEMENT_WIDTH(x2);
@@ -114,9 +114,9 @@ private:
 	void FilterGridMotionDown(GridMap m, Rect& r, int& dy) {
 		int y2 = r.y + r.h - 1;
 		int y2_next = y2 + dy;
-		int t = MAX_PIXEL_WIDTH;
+		int t = MAX_PIXEL_HEIGHT;
 		if (y2_next >= t)
-			dy = MAX_PIXEL_WIDTH - y2;
+			dy = MAX_PIXEL_HEIGHT - y2 - 1;
 		else {
 			auto newRow = DIV_GRID_ELEMENT_HEIGHT(y2_next);
 			auto currRow = DIV_GRID_ELEMENT_HEIGHT(y2);
@@ -202,12 +202,18 @@ public:
 			abs(dx) <= GRID_ELEMENT_WIDTH && abs(dy) <= GRID_ELEMENT_HEIGHT
 		);
 		// try horizontal move
+		if (r.x == 624 && dx == 1) {
+			auto i = 0;
+		}
 		if (dx < 0)
 			FilterGridMotionLeft(m, r, dx);
 		else
 			if (dx > 0)
 				FilterGridMotionRight(m, r, dx);
 		r.x += dx;
+		if (r.x == 625) {
+			auto i = 0;
+		}
 		// try vertical move
 		if (dy < 0)
 			FilterGridMotionUp(m, r, dy);
