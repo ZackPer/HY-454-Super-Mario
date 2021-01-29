@@ -59,9 +59,15 @@ public:
 	}
 
 	void MakeBrickTilesSolid(int tileLayerId, int i, int j, GridLayer& myGrid) {
-		if (tileLayerId == 216 || tileLayerId == 197 || tileLayerId == 199 || tileLayerId == 198)
+		if (tileLayerId == 216 || tileLayerId == 197 || tileLayerId == 199 || tileLayerId == 198) {
 			myGrid.gridTileStatus[i][j] = GRID_SOLID_TILE;
-		//also add for brick that need to be kept in a map as well.
+		}		
+	}
+
+	void MakeBrickTileEmpty(int pixelX, int pixelY, GridLayer& myGrid) {
+		int i = pixelX / 16;
+		int j = pixelY / 16;
+		myGrid.gridTileStatus[j][i] = GRID_EMPTY_TILE;
 	}
 
 	// Instantiates all sprites corresponding to their spawn positions

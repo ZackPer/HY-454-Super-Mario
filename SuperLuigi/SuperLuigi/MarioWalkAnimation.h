@@ -249,6 +249,5 @@ public:
 			mario->SetFrame(0);
 			mario->Move(0, 0);
 		}	
-
 	}
 };

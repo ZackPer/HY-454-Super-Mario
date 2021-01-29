@@ -12,11 +12,11 @@
 
 class Mario : public SpriteEntity {
 public:
-	bool isSuper = false;
+
 	bool isRunning = false;
 	AnimationState animationState = WALKING;
 	Direction direction = NO, looking = RIGHT;
-	Star star;
+	StarAnimation starAnimation;
 
 	Mario() = default;
 	Mario(int x, int y, GridLayer *myGrid, Rect *viewWindow) 
@@ -49,7 +49,7 @@ public:
 			ALLEGRO_KEYBOARD_STATE keyState;
 			al_get_keyboard_state(&keyState);
 			if (animationState != DYING && animationState != GROWING) {
-				star.EveryXMilliSecs(SystemClock::Get().milli_secs(), 10000, self);
+				SethasStar(starAnimation.Update(SystemClock::Get().milli_secs(), 10000, self));
 				//jumping
 				if (al_key_down(&keyState, ALLEGRO_KEY_UP) &&
 					!gravityModule.GetIsFalling() &&
@@ -63,7 +63,8 @@ public:
 
 				if (al_key_down(&keyState, ALLEGRO_KEY_3))
 				{
-					star.StartTheCount(SystemClock::Get().milli_secs());
+					SethasStar(true);
+					starAnimation.StartAnimation(SystemClock::Get().milli_secs());
 				}
 
 				if (jumpModule.IsJumping())
@@ -125,12 +126,14 @@ public:
 			[=](Animator* animator) {
 				SuperChangeFilms(false, dir);
 				animationState = WALKING;
+				isInvunerable = false;
 			}
 		);
 		self->SetBoundingArea();
 	}
 
 	void Grow(Direction dir) {
+		isInvunerable = true;
 		animationState = GROWING;
 		selfMover->StopAllAnimators();
 		growerAndShrinker->Grow(dir);
@@ -138,6 +141,7 @@ public:
 			[=](Animator* animator) {
 				SuperChangeFilms(true, dir);
 				animationState = WALKING;
+				isInvunerable = false;
 			}
 		);
 		self->SetBoundingArea();
@@ -172,11 +176,7 @@ public:
 		}
 	}
 
-	void ChangeInvincible(bool b) {
-
-	}
-
-	bool GetSuper() {
+	bool GetisSuper() {
 		return isSuper;
 	}
 
@@ -185,10 +185,18 @@ public:
 	}
 
 	void Die() {
-		animationState = DYING;
-		selfMover->StopAllAnimators();
-		jumpModule.Reset();
-		deathModule->Die();
+		if (isSuper && !isInvunerable) {
+			isInvunerable = true;
+			Shrink(looking);
+		}		
+		else if(!isSuper && !isInvunerable){
+			if (animationState == DYING)
+				return;
+			animationState = DYING;
+			selfMover->StopAllAnimators();
+			jumpModule.Reset();
+			deathModule->Die();
+		}
 	}
 
 	MarioMover* GetselfMover(){
@@ -203,6 +211,17 @@ public:
 		return InputEnabled;
 	}
 
+	void SethasStar(bool b) {
+		hasStar = b;
+	};
+
+	bool GethasStar() {
+		return hasStar;
+	};
+
+	StarAnimation& Getstar() {
+		return starAnimation;
+	}
 protected:
 	GridLayer			*myGrid;
 	Rect				*viewWindow;
@@ -215,6 +234,9 @@ protected:
 	MarioMover*			selfMover;
 	GrowerAndShrinker*	growerAndShrinker;
 	bool				InputEnabled;
+	bool				isSuper = false;
+	bool				hasStar = false;
+	bool				isInvunerable = false;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);

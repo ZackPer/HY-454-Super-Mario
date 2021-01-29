@@ -4,6 +4,7 @@
 #include "Engine/Animations/Animators.h"
 #include "Engine/Sprite/Sprite.h"
 #include "Engine/SystemClock.h"
+#include "PrimitiveHolder.h"
 
 enum State {
 	IDLE = 0,
@@ -113,7 +114,7 @@ private:
 				sprite->GetBox().x,
 				sprite->GetBox().y,
 				containedFilm,
-				MysteryID + ".sprite"
+				MysteryID
 			);
 			containedSprite->SetMover(containedSprite->MakeSpriteGridLayerMover(myGrid, containedSprite));
 			containedSprite->SetBoundingArea();
@@ -121,13 +122,25 @@ private:
 			containedSprite->SetVisibility(true);
 
 			//Initialize spawn Animation and spawn Animator
-			containedSpawnAnimation = MovingAnimation(
-				MysteryID + ".spawnAnimation",
-				8,
-				0,
-				-2,
-				75000
-			);
+			if (MysteryID == "star") {
+				containedSpawnAnimation = MovingAnimation(
+					MysteryID + ".spawnAnimation",
+					6,
+					0,
+					-3,
+					75000
+				);
+			}
+			else {
+				containedSpawnAnimation = MovingAnimation(
+					MysteryID + ".spawnAnimation",
+					8,
+					0,
+					-2,
+					75000
+				);
+			}
+				
 
 			containedSpawnAnimator.SetOnAction(
 				[=](Animator* animator, const Animation& anim) {
@@ -135,8 +148,21 @@ private:
 				}
 			);
 
-			//Set on finish to create the entity from the sprite, so when spawn finishes, object is instanciated.
-			//containedSpawnAnimator.SetOnFinish();
+			if (MysteryID == "mushroom") {
+				containedSpawnAnimator.SetOnFinish(
+					[=](Animator* a) {
+						PrimitiveHolder::Get().CreateSuperMushroom(containedSprite->GetBox().x, containedSprite->GetBox().y, containedSprite);
+					}
+				);
+			}
+			else if(MysteryID == "star") {
+				containedSpawnAnimator.SetOnFinish(
+					[=](Animator* a) {
+						PrimitiveHolder::Get().CreateStar(containedSprite->GetBox().x, containedSprite->GetBox().y, containedSprite);
+					}
+				);
+			}
+				
 
 			//Start Spawn animation.
 			containedSpawnAnimator.Start(&containedSpawnAnimation, SystemClock::Get().micro_secs());
@@ -160,10 +186,9 @@ public:
 		);		
 
 		//initialize sprite
-		sprite = new Sprite(x, y, currFilm, "mysteryTile", 1); //placeholder
+		sprite = new Sprite(x, y, currFilm, "mysteryTile", 5);
 		sprite->SetMover(sprite->MakeSpriteGridLayerMover(myGrid, sprite));
 		sprite->SetBoundingArea();
-		sprite->SetZorder(1);
 
 		//initialize default frame Animator
 		frameAnimator.SetOnAction(
@@ -214,6 +239,12 @@ public:
 		);
 
 		action = [=](Sprite* mario, Sprite* self) {
+			if (mario->GetBox().h == 32) {
+				std::cout << "DESTROY" << std::endl;
+				EntitySpawner::Get().MakeBrickTileEmpty(self->GetBox().x, self->GetBox().y, (*myGrid));
+				self->SetVisibility(false);
+			}
+				
 			hitStartAnimator.Start(bouncingAnimation, SystemClock::Get().micro_secs());
 		};
 

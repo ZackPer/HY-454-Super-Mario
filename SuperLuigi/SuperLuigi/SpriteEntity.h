@@ -17,6 +17,12 @@ public:
 		self->SetRange(1, 1);
 	}
 
+	SpriteEntity(int x, int y, AnimationFilm* film, std::string typeId, Sprite* s) {
+		self = s;
+		self->SetBoundingArea();
+		self->SetRange(1, 1);
+	}
+
 	// Sets self mover to be the default mover.
 	void SetMover(GridLayer *myGrid) {
 		self->SetMover(self->MakeSpriteGridLayerMover(myGrid, self));
@@ -57,6 +63,10 @@ public:
 
 	void SetOnDeath(OnDeath onDeath) {
 		this->onDeath = onDeath;
+	}
+
+	GravityModule& GetgravityModule() {
+		return gravityModule;
 	}
 
 protected:
