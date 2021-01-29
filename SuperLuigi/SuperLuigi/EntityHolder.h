@@ -41,7 +41,15 @@ public:
 
 		return NULL;
 	}
-	std::vector<SpriteEntity *> Find(std::string typeID) {
+	std::vector<SpriteEntity *> FindByType(std::string typeID) {
+		std::vector<SpriteEntity *> results;
+		for (auto &it : entityList) {	
+			if (it->GetType() == typeID)
+				results.push_back(it);
+		}
+		return results;
+	}
+	std::vector<SpriteEntity *> FindBySpriteTypeId(std::string typeID) {
 		std::vector<SpriteEntity *> results;
 		for (auto &it : entityList) {
 			if (it->GetSelf()->GetTypeId() == typeID)

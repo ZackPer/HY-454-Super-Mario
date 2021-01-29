@@ -25,21 +25,59 @@ public:
 		this->myGrid = myGrid;
 		this->viewWindow = viewWindow;
 
+		marioJumpingLeft = FrameRangeAnimation("littlemario.jump.left", 0, 2, 0, 0, 0, 100000);
+		marioJumpingRight = FrameRangeAnimation("littlemario.jump.right", 0, 2, 0, 0, 0, 100000);
+		supermarioJumpingLeft = FrameRangeAnimation("supermario.jump.left", 0, 2, 0, 0, 0, 100000);
+		supermarioJumpingRight = FrameRangeAnimation("supermario.jump.right", 0, 2, 0, 0, 0, 100000);
+
 		//My module Initialization
 		jumpModule = JumpModule(self);
 		jumpModule.SetIsFalling(gravityModule.GetIsFallingRef());
 		jumpModule.Init();
+
+		deathModule = new DeathModule(self);
+		selfMover = new MarioMover(self);
+		growerAndShrinker = new GrowerAndShrinker(self);
 
 		// Super's Initializations
 		PrepareMoverWithViewWindowCheck(myGrid, viewWindow);
 		self->SetRange(1, 1);
 		InitGravity(myGrid);
 		self->Move(0, 0); //This is to calculate gravity at least once.
-		deathModule = new DeathModule(self);
-		selfMover = new MarioMover(self);
-		growerAndShrinker = new GrowerAndShrinker(self);
 
 		InputEnabled = true;
+	}
+
+	//This shouldnt be here but last day whatever 
+	void JumpAnimation() {
+		animationState = JUMPING;
+		selfMover->StopFrameAnimator();
+		if (looking == RIGHT) {
+			if (!isSuper) {
+				self->SetCurrFilm(AnimationFilmHolder::Get().GetFilm(marioJumpingRight.GetId()));
+				jumpingFrameAnimator.Start(self, &marioJumpingRight, SystemClock::Get().micro_secs());
+			}
+			else {
+				self->SetCurrFilm(AnimationFilmHolder::Get().GetFilm(supermarioJumpingRight.GetId()));
+				jumpingFrameAnimator.Start(self, &supermarioJumpingRight, SystemClock::Get().micro_secs());
+			}
+		}
+		else if (looking == LEFT) {
+			if (!isSuper) {
+				self->SetCurrFilm(AnimationFilmHolder::Get().GetFilm(marioJumpingLeft.GetId()));
+				jumpingFrameAnimator.Start(self, &marioJumpingLeft, SystemClock::Get().micro_secs());
+			}
+			else {
+				self->SetCurrFilm(AnimationFilmHolder::Get().GetFilm(supermarioJumpingLeft.GetId()));
+				jumpingFrameAnimator.Start(self, &supermarioJumpingLeft, SystemClock::Get().micro_secs());
+			}
+		}
+	}
+	void StopJumpAnimation() {
+		animationState = WALKING;
+		direction = looking;
+		jumpingFrameAnimator.Stop();
+		selfMover->ForceStartFrameAnimator(direction, isRunning, isSuper, looking, animationState);
 	}
 
 	void InputPoll() {
@@ -55,6 +93,7 @@ public:
 					!gravityModule.GetIsFalling() &&
 					!jumpModule.IsJumping())
 				{
+					JumpAnimation();
 					jumpModule.Jump(80, 1000000 * 0.7, false);
 				}
 				else if (!al_key_down(&keyState, ALLEGRO_KEY_UP) && jumpModule.IsJumping()){
@@ -65,11 +104,6 @@ public:
 				{
 					star.StartTheCount(SystemClock::Get().milli_secs());
 				}
-
-				if (jumpModule.IsJumping())
-					animationState = JUMPING;
-				else
-					animationState = WALKING;
 
 				//moving and running
 				if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT)) {
@@ -187,6 +221,7 @@ public:
 	void Die() {
 		animationState = DYING;
 		selfMover->StopAllAnimators();
+		jumpingFrameAnimator.Stop();
 		jumpModule.Reset();
 		deathModule->Die();
 	}
@@ -217,7 +252,7 @@ protected:
 	GridLayer			*myGrid;
 	Rect				*viewWindow;
 	JumpModule			jumpModule;
-	DeathModule*		deathModule;
+	DeathModule			*deathModule;
 	int					dx;
 	int					dy;
 	uint64_t			lastInput = 0;
@@ -227,6 +262,12 @@ protected:
 	bool				InputEnabled;
 	int					points;
 
+	FrameRangeAnimation marioJumpingLeft;
+	FrameRangeAnimation marioJumpingRight;
+	FrameRangeAnimation supermarioJumpingLeft;
+	FrameRangeAnimation supermarioJumpingRight;
+	FrameRangeAnimator	jumpingFrameAnimator;
+
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);
 		gravityModule.StartFalling();
@@ -235,5 +276,6 @@ protected:
 		gravityModule.SetIsFalling(false);
 		gravityModule.StopFalling();
 		jumpModule.Reset();
+		StopJumpAnimation();
 	}
 };

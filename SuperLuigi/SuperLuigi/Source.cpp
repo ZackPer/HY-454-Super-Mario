@@ -130,7 +130,7 @@ void InitPrimitiveCallbacks() {
 		}
 	);
 	EntitySpawner::Get().Add(
-		219,
+		117,
 		[=](int x, int y) -> SpriteEntity * {
 			return PrimitiveHolder::Get().CreatePiranhaPlant(x, y);
 		}
@@ -218,7 +218,6 @@ void InitPrimitiveCallbacks() {
 			return PrimitiveHolder::Get().CreateCoin(x, y);
 		}
 	);
-	//179
 }
 
 void initializeAnimationsAndSprites() {

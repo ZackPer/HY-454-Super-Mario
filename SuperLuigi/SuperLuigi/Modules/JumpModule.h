@@ -47,7 +47,6 @@ public:
 		jumpAnimator->SetOnFinish(
 			[=](Animator *animator) {
 				self->gravity.SetGravityAddicted(true);
-				std::cout << "Jump animator finish!\n";
 				isBouncing = false;
 			}
 		);

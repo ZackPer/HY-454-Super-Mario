@@ -39,6 +39,7 @@ public:
 	}
 	SpriteEntity *CreateGoomba(int x, int y) {
 		MovingEntity *goomba = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("goomba.walk"), "goomba", myGrid);
+		goomba->SetTpe("enemy");
 		FrameRangeAnimation walk = FrameRangeAnimation("goomba.walk", 0, 2, 0, 0, 0, 300000);
 		FrameRangeAnimation *death = new FrameRangeAnimation("goomba.death", 0, 1, 1, 0, 0, 400000);
 		goomba->SetWalkLeft(walk);
@@ -50,8 +51,7 @@ public:
 		goomba->SetSpeed(1);
 		goomba->SetEdgeDetection(false);
 
-		Mario *supermario = EntityHolder::Get().GetSuperMario();
-		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), goomba->GetSelf(), PrepareKillBounce(supermario, goomba));
+		PrepareEnemyColliders(goomba);
 
 		EntityHolder::Get().Add(goomba);
 		return goomba;
@@ -73,7 +73,17 @@ public:
 		return (SpriteEntity*)shell;
 	}
 	SpriteEntity *CreatePiranhaPlant(int x, int y) {
-		PiranhaPlant *piranha = new PiranhaPlant(x, y);
+		SimpleEntity *pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("pipe"), "pipe");
+		pipe->GetSelf()->SetVisibility(true);
+		pipe->GetSelf()->SetZorder(5);
+		PiranhaPlant *piranha = new PiranhaPlant(x + 8, y - 23);
+
+		Mario *supermario = EntityHolder::Get().GetSuperMario();
+		CollisionCallback onPipeCollision = [piranha, supermario](Sprite *supermario, Sprite *pipe) {
+			piranha->Hide();
+		};
+		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), pipe->GetSelf(), onPipeCollision);
+
 		return (SpriteEntity *)piranha;
 	}
 	SpriteEntity *CreatePipe(int x, int y) {
@@ -116,7 +126,7 @@ public:
 				pipe_animator->SetOnFinish(
 					[=](Animator* animator) {
 						extern CameraMover cameraMover;
-						auto results = EntityHolder::Get().Find("transportPoint");
+						auto results = EntityHolder::Get().FindByType("transportPoint");
 						if (results.size() == 1) {
 							SimpleEntity *transportPoint = (SimpleEntity *)results[0];
 							Rect box = transportPoint->GetSelf()->GetBox();
@@ -174,7 +184,7 @@ public:
 				pipe_animator->SetOnFinish(
 					[=](Animator* animator) {
 						extern CameraMover cameraMover;
-						std::vector<SpriteEntity *> results = EntityHolder::Get().Find("transportPipe1");
+						std::vector<SpriteEntity *> results = EntityHolder::Get().FindByType("transportPipe1");
 						if (results.size() == 0)
 							assert(0);
 
@@ -214,6 +224,7 @@ public:
 		return coin;
 	}
 
+
 	void SetMyGrid(GridLayer *myGrid) {
 		this->myGrid = myGrid;
 	}
@@ -226,16 +237,17 @@ private:
 	
 	SpriteEntity *CreateKoopa(int x, int y, std::string color) {
 		MovingEntity *koopa = new MovingEntity(x, y - 8, AnimationFilmHolder::Get().GetFilm(color + ".koopa.walk.left"), color + ".koopa", myGrid);
+		koopa->SetTpe("enemy");
 		FrameRangeAnimation walkLeft = FrameRangeAnimation(color + ".koopa.walk.left", 0, 2, 0, 0, 0, 300000);
 		FrameRangeAnimation walkRight = FrameRangeAnimation(color + ".koopa.walk.right", 0, 2, 0, 0, 0, 300000);
 
 		auto defaultDeath = koopa->Prepare_DefaultOnDeath(koopa);
 		koopa->SetOnDeath(
 			[koopa, defaultDeath, color]() {
-			defaultDeath();
-			Rect box = koopa->GetSelf()->GetBox();
-			PrimitiveHolder::Get().CreateShell(box.x, box.y + 5, color);
-		}
+				defaultDeath();
+				Rect box = koopa->GetSelf()->GetBox();
+				PrimitiveHolder::Get().CreateShell(box.x, box.y + 5, color);
+			}
 		);
 		koopa->SetWalkLeft(walkLeft);
 		koopa->SetWalkRight(walkRight);
@@ -243,13 +255,41 @@ private:
 		koopa->SetEdgeDetection(false);
 		koopa->GetSelf()->SetVisibility(true);
 
-		auto supermario = EntityHolder::Get().GetSuperMario();
-		CollisionChecker::GetSingleton().Register(supermario->GetSelf(), koopa->GetSelf(), PrepareKillBounce(supermario, koopa));
+		PrepareEnemyColliders(koopa);
 
 		EntityHolder::Get().Add(koopa);
 		return koopa;
 	}
 
+
+	void PrepareEnemyColliders(SpriteEntity *entity) {
+		auto enemies = EntityHolder::Get().FindByType("enemy");
+		for (auto &it : enemies) {
+			auto signChange = PrepareEnemySignChange((MovingEntity  *)entity, (MovingEntity *)it);
+			CollisionChecker::GetSingleton().Register(entity->GetSelf(), it->GetSelf(), signChange);
+		}
+
+		auto shells = EntityHolder::Get().FindByType("shell");
+		for (auto &shell : shells) {
+			auto jumpDeath = PrepareDeathFromShell((MovingEntity  *)shell, (MovingEntity  *)entity);
+			CollisionChecker::GetSingleton().Register(shell->GetSelf(), entity->GetSelf(), jumpDeath);
+		}
+
+		Mario *mario = EntityHolder::Get().GetSuperMario();
+		auto onMarioCollision = PrepareKillBounce(mario, entity);
+		CollisionChecker::GetSingleton().Register(mario->GetSelf(), entity->GetSelf(), onMarioCollision);
+	}
+	CollisionCallback PrepareDeathFromShell(MovingEntity *shell, MovingEntity *entity) {
+		return [shell, entity](Sprite *s1, Sprite *s2) {
+			//entity->RadikiaAnapoda();
+		};
+	}
+	CollisionCallback PrepareEnemySignChange(MovingEntity *enemy1, MovingEntity *enemy2) {
+		return [enemy1, enemy2](Sprite *s1, Sprite *s2) {
+			enemy1->SetSign(enemy1->GetSign() * -1);
+			enemy2->SetSign(enemy2->GetSign() * -1);
+		};
+	}
 	CollisionCallback PrepareKillBounce(Mario *supermario, SpriteEntity *entity) {
 		return [entity](Sprite *s1, Sprite *s2) {
 			Mario *supermario = EntityHolder::Get().GetSuperMario();

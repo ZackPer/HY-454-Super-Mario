@@ -15,6 +15,7 @@ public:
 		self = new Sprite(x, y, film, typeId);
 		self->SetBoundingArea();
 		self->SetRange(1, 1);
+		this->type = typeId;
 	}
 
 	// Sets self mover to be the default mover.
@@ -59,8 +60,15 @@ public:
 		this->onDeath = onDeath;
 	}
 
+	void SetTpe(std::string type) {
+		this->type = type;
+	}
+	std::string GetType() {
+		return this->type;
+	}
+
 protected:
-	std::string		id;
+	std::string		type;
 	Sprite			*self;
 	int				speed = 2;
 	GravityModule	gravityModule;

@@ -6,7 +6,7 @@
 enum MovingState {
 	NOT_MOVING = 0,
 	MOVING_RIGHT = 1,
-	MOVING_LEFT = 2
+	MOVING_LEFT = 2,
 };
 
 enum AnimationState {
@@ -215,31 +215,35 @@ public:
 		switch (dir) {
 		case RIGHT:
 			//stop all other animations			
-			mario->setCurrFilm(walkRightFilm);
 			if (movingState != MOVING_RIGHT) {
 				acceleration = 1;
 				MoveAnimator.Start(&RightWalkMoveAnimation, SystemClock::Get().micro_secs());
-				FramesAnimator.Start(mario, &RightWalkFramesAnimation, SystemClock::Get().micro_secs());
+				if (animationState != JUMPING) {
+					mario->setCurrFilm(walkRightFilm);
+					FramesAnimator.Start(mario, &RightWalkFramesAnimation, SystemClock::Get().micro_secs());
+				}
 			}
 			movingState = MOVING_RIGHT;
 			looking = RIGHT;
 			break;
 		case LEFT:
 			//stop all other animations
-			mario->setCurrFilm(walkLeftFilm);
 			if (movingState != MOVING_LEFT) {
 				acceleration = 1;
 				MoveAnimator.Start(&LeftWalkMoveAnimation, SystemClock::Get().micro_secs());
-				FramesAnimator.Start(mario, &LeftWalkFramesAnimation, SystemClock::Get().micro_secs());
+				if (animationState != JUMPING) {
+					mario->setCurrFilm(walkLeftFilm);
+					FramesAnimator.Start(mario, &LeftWalkFramesAnimation, SystemClock::Get().micro_secs());
+				}
 			}
 			movingState = MOVING_LEFT;
 			looking = LEFT;
 			break;
 		default:
-			if (movingState == MOVING_RIGHT && isRunning) {
+			if (movingState == MOVING_RIGHT && isRunning && animationState != JUMPING) {
 				RemainingMoveFramesAnimator.Start(mario, &RemainingMoveRightFrameAnimation, SystemClock::Get().micro_secs());
 			}
-			else if (movingState == MOVING_LEFT && isRunning) {
+			else if (movingState == MOVING_LEFT && isRunning && animationState != JUMPING) {
 				RemainingMoveFramesAnimator.Start(mario, &RemainingMoveLeftFrameAnimation, SystemClock::Get().micro_secs());
 			}
 			acceleration = 1;
@@ -249,6 +253,36 @@ public:
 			mario->SetFrame(0);
 			mario->Move(0, 0);
 		}	
+	}
 
+	//Trash function just for last day deadline.
+	void ForceStartFrameAnimator(Direction dir, bool isRunning, bool super, Direction& looking, AnimationState animationState) {
+		switch (dir) {
+		case RIGHT:
+			mario->setCurrFilm(walkRightFilm);
+			FramesAnimator.Start(mario, &RightWalkFramesAnimation, SystemClock::Get().micro_secs());
+			movingState = MOVING_RIGHT;
+			break;
+		case LEFT:
+			//stop all other animations
+			mario->setCurrFilm(walkLeftFilm);
+			FramesAnimator.Start(mario, &LeftWalkFramesAnimation, SystemClock::Get().micro_secs());
+			movingState = MOVING_LEFT;
+			break;
+		default:
+			acceleration = 1;
+			movingState = NOT_MOVING;
+			MoveAnimator.Stop();
+			FramesAnimator.Stop();
+			mario->SetFrame(0);
+			mario->Move(0, 0);
+		}
+	}
+	void StopFrameAnimator() {
+		FramesAnimator.Stop();
+		RemainingMoveFramesAnimator.Stop();
+	}
+	MovingState GetMovingState() {
+		return movingState;
 	}
 };

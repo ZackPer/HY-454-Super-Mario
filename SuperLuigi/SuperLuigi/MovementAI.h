@@ -82,7 +82,12 @@ public:
 	}
 
 	void SetSign(int sign) {
+		if (sign != this->sign)
+			notifyChange(sign);
 		this->sign = sign;
+	}
+	int GetSign() {
+		return this->sign;
 	}
 
 private:

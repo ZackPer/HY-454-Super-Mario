@@ -72,6 +72,10 @@ public:
 		movement.SetSign(sign);
 	}
 
+	int GetSign() {
+		return movement.GetSign();
+	}
+
 	//Those are implemented bellow the Primitive holder code for linking purposes
 	std::function<void()> Prepare_DefaultOnDeath(MovingEntity *entity);
 	std::function<void()> Prepare_DefaultOnDeath(MovingEntity *entity, FrameRangeAnimation *deathAnimation);
