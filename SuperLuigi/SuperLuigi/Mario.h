@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Engine/Sprite/Sprite.h"
 #include "Engine/Animations/Animations.h"
 #include "Engine/Animations/Animators.h"
@@ -10,6 +11,10 @@
 #include "Powerups.h"
 #include "Modules/DeathModule.h"
 
+
+
+extern TileLayer myTile;
+extern CameraMover cameraMover;
 class Mario : public SpriteEntity {
 public:
 	bool isSuper = false;
@@ -44,7 +49,8 @@ public:
 		score = 0;
 		lives = 3;
 		coins = 0;
-
+		spawnPos.x = 48;
+		spawnPos.y = 48;
 	}
 
 	void InputPoll() {
@@ -61,7 +67,7 @@ public:
 					!jumpModule.IsJumping())
 				{
 					ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_jump_small.wav");
-					al_play_sample(soundEf, 1.0, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
+					al_play_sample(soundEf, 0.3, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 					jumpModule.Jump(80, 1000000 * 0.7, false);
 				}
 				else if (!al_key_down(&keyState, ALLEGRO_KEY_UP) && jumpModule.IsJumping()){
@@ -96,8 +102,8 @@ public:
 				else if (al_key_down(&keyState, ALLEGRO_KEY_2)) {
 					Shrink(looking);
 				}
-				else if (al_key_down(&keyState, ALLEGRO_KEY_ESCAPE)) {
-					exit(EXIT_SUCCESS);
+				else if (al_key_down(&keyState, ALLEGRO_KEY_C)) {
+					MoveToCheckPoint();
 				}
 			}
 		}
@@ -191,7 +197,24 @@ public:
 		isSuper = b;
 	}
 
+	void MoveToCheckPoint() {
+		GetSelf()->SetHasDirectMotion(true);
+		selfMover->StopAllAnimators();
+		GetSelf()->SetPos(spawnPos.x, spawnPos.y);
+		GetSelf()->Move(0, 0);
+		cameraMover.SetRightMost(GetSelf()->GetBox().x);
+		myTile.viewWin.dimensions.x = GetSelf()->GetBox().x - 48;
+		GetSelf()->SetHasDirectMotion(false);
+	}
+
 	void Die() {
+		if (animationState != DYING) {
+			ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_mariodie.wav");
+			al_play_sample(soundEf, 0.5, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
+			if (lives > 0) {
+				this->lives--;
+			}
+		}
 		animationState = DYING;
 		selfMover->StopAllAnimators();
 		jumpModule.Reset();
@@ -263,6 +286,13 @@ protected:
 	int					lives;
 	int					coins;
 	int					score;
+	
+	struct SpawnPosition {
+		int x;
+		int y;
+	};
+
+	struct SpawnPosition spawnPos;
 
 	void OnStartFalling() {
 		gravityModule.SetIsFalling(true);

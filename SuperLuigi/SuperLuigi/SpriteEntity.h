@@ -57,6 +57,7 @@ public:
 
 	void SetOnDeath(OnDeath onDeath) {
 		this->onDeath = onDeath;
+
 	}
 
 protected:

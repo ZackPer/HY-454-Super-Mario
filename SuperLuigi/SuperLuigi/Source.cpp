@@ -261,6 +261,13 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
 		if (ev.type == ALLEGRO_EVENT_TIMER) {
+			ALLEGRO_KEYBOARD_STATE keyState;
+			al_get_keyboard_state(&keyState);
+
+			if (al_key_down(&keyState, ALLEGRO_KEY_ESCAPE)) {
+				exit(EXIT_SUCCESS);
+			}
+
 			//calculate starting position
 			startPosX = supermario->GetSelf()->GetBox().x;
 			startPosY = supermario->GetSelf()->GetBox().y;
@@ -277,6 +284,10 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 			al_draw_text(font, al_map_rgb(255, 255, 255), 200, 70, ALLEGRO_ALIGN_CENTER, supermario->GetCoins().c_str());
 			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 30, ALLEGRO_ALIGN_CENTER, "LIVES");
 			al_draw_text(font, al_map_rgb(255, 255, 255), 350, 70, ALLEGRO_ALIGN_CENTER, supermario->GetLives().c_str());
+			
+			for (int i = 0; i < PrimitiveHolder::Get().showText.size(); i++) {
+				PrimitiveHolder::Get().showText[i]();
+			}
 			al_flip_display();
 
 			AnimatorManager::GetSingleton().Progress(SystemClock::Get().micro_secs());
@@ -335,6 +346,7 @@ void MainMenu() {
 
 	ALLEGRO_SAMPLE *song = al_load_sample("Sounds/theme.wav");
 	ALLEGRO_SAMPLE_INSTANCE *songInstance = al_create_sample_instance(song);
+	ALLEGRO_BITMAP* sav = al_load_bitmap("mario_rip.png");
 	al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
 	al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
 
@@ -345,11 +357,11 @@ void MainMenu() {
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 	while (inMenu) {
 		al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-		al_draw_text(font, al_map_rgb(255, 255, 255), WIDTH / 2, HEIGHT / 2 - 220, ALLEGRO_ALIGN_CENTER, "SUPER SAVVIDIS  Q('.'O)");
+		al_draw_bitmap(sav, 64, HEIGHT / 2 - 230, 0);
+		al_draw_text(font, al_map_rgb(255, 255, 255), WIDTH / 2 + 50, HEIGHT / 2 - 220, ALLEGRO_ALIGN_CENTER, "SUPER SAVVIDIS  Q('.'O)");
 		al_draw_text(font, al_map_rgb(255, 255, 255), WIDTH / 2, HEIGHT / 2 - 100, ALLEGRO_ALIGN_CENTER, "PLAY");
 		al_draw_text(font, al_map_rgb(255, 255, 255), WIDTH / 2, HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "SETTINGS");
 		al_draw_text(font, al_map_rgb(255, 255, 255), WIDTH / 2, HEIGHT / 2 + 100, ALLEGRO_ALIGN_CENTER, "EXIT");
-
 		if (m_state == Play) {
 			al_draw_text(font, al_map_rgb(255, 255, 255), WIDTH / 2 - 250, HEIGHT / 2 - 100, ALLEGRO_ALIGN_CENTER, ">");
 		}
@@ -365,7 +377,7 @@ void MainMenu() {
 		al_wait_for_event(event_queue, &events);
 		if (events.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (events.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-				al_play_sample(soundEf, 1.0, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
+				al_play_sample(soundEf, 0.3, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
 				switch (m_state)
 				{
 				case Play:
@@ -382,7 +394,7 @@ void MainMenu() {
 				}
 			}
 			else if (events.keyboard.keycode == ALLEGRO_KEY_UP) {
-				al_play_sample(soundEf, 1.0, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
+				al_play_sample(soundEf, 0.3, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
 				switch (m_state)
 				{
 				case Play:
@@ -399,7 +411,7 @@ void MainMenu() {
 				}
 			}
 			else if (events.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-				al_play_sample(soundEf, 1.0, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
+				al_play_sample(soundEf, 0.3, 0, 2.0, ALLEGRO_PLAYMODE_ONCE, ssId);
 				switch (m_state)
 				{
 				case Play:
