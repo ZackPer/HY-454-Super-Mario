@@ -27,8 +27,8 @@
 #include "BlockTile.h"
 #include "./PrimitiveHolder.h"
 
-#define WIDTH	736
-#define	HEIGHT	624
+#define WIDTH	768
+#define	HEIGHT	720
 
 const Clipper MakeTileLayerClipper(TileLayer* layer) {
 	return Clipper().SetView(
@@ -250,7 +250,7 @@ void CoreLoop(ALLEGRO_DISPLAY *display, TileMap mapTileIndexes) {
 	ALLEGRO_KEYBOARD_STATE	keyboardState;
 	al_start_timer(timer);
 
-	EntitySpawner::Get().CheckForSpawn(myTile.viewWin.displayArea); //Everything on the first frame is spawned here including mario.
+	EntitySpawner::Get().CheckForSpawn(Rect(0, 0, 80, 720)); //Everything on the first frame is spawned here including mario.
 	assert(supermario);
 	cameraMover = CameraMover(&myTile, supermario->GetSelf(), supermario->GetSelf()->GetBox().x);
 	EntityHolder::Get().SetSuperMario(supermario);
@@ -449,7 +449,7 @@ int main() {
 	//allegro addons
 	IncludeAddons();
 
-	myTile = TileLayer("CSVMaps/testmap.csv");
+	myTile = TileLayer("CSVMaps/map1.csv");
 	myGrid = GridLayer(myTile.TileMapIndexes);
 
 	int mapColumns, mapRows;

@@ -15,7 +15,7 @@ public:
 	CameraMover(TileLayer* tl, Sprite* s, int startPos) {
 		sprite = s;
 		tileLayer = tl;
-		rightmost = startPos + 64;
+		rightmost = startPos + 48;
 	}
 	
 	void XfilterMovement(int& dx){

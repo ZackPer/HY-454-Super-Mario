@@ -10,6 +10,11 @@ public:
 	{
 		GetSelf()->SetHasDirectMotion(true);
 	}
+	SimpleEntity(int x, int y, AnimationFilm *film, std::string typeId, int zOrder)
+		: SpriteEntity(x, y, film, typeId, zOrder)
+	{
+		GetSelf()->SetHasDirectMotion(true);
+	}
 
 private:
 

@@ -79,10 +79,10 @@ public:
 		return (SpriteEntity*)shell;
 	}
 	SpriteEntity *CreatePiranhaPlant(int x, int y) {
-		SimpleEntity *pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("pipe"), "pipe");
-		pipe->GetSelf()->SetVisibility(true);
-		pipe->GetSelf()->SetZorder(5);
 		PiranhaPlant *piranha = new PiranhaPlant(x + 8, y - 23);
+		SimpleEntity *pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("pipe"), "pipe", 5);
+		pipe->GetSelf()->SetVisibility(true);
+		
 
 		Mario *supermario = EntityHolder::Get().GetSuperMario();
 		CollisionCallback onPipeCollision = [piranha, supermario](Sprite *supermario, Sprite *pipe) {
@@ -93,7 +93,7 @@ public:
 		return (SpriteEntity *)piranha;
 	}
 	SpriteEntity *CreatePipe(int x, int y) {
-		SimpleEntity *pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("pipe"), "pipe");
+		SimpleEntity *pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("pipe"), "pipe", 5);
 		pipe->GetSelf()->SetVisibility(true);
 		pipe->GetSelf()->SetZorder(5);
 		return (SpriteEntity *)pipe;
@@ -164,7 +164,7 @@ public:
 		return transportPoint;
 	}
 	SpriteEntity *CreateTransportPipe2(int x, int y) {
-		auto return_first_pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("green.pipe.left"), "pipe");
+		auto return_first_pipe = new SimpleEntity(x, y, AnimationFilmHolder::Get().GetFilm("green.pipe.left"), "pipe", 5);
 		return_first_pipe->GetSelf()->SetVisibility(true);
 		EntityHolder::Get().Add(return_first_pipe);
 		Mario *supermario = EntityHolder::Get().GetSuperMario();
@@ -179,7 +179,7 @@ public:
 				&& marioBox.y + marioBox.h > pipeBox.y + 16
 				)
 			{
-				MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", supermario->GetSelf()->GetBox().h, 1, 0, 2 * 25000);
+				MovingAnimation* pipe_anim = new MovingAnimation("pipe_left", supermario->GetSelf()->GetBox().w, 1, 0, 2 * 25000);
 				MovingAnimator* pipe_animator = new MovingAnimator();
 				pipe_animator->SetOnAction(
 					[=](Animator* animator, const Animation &anim_ref) {
@@ -226,12 +226,6 @@ public:
 		ALLEGRO_SAMPLE *soundEf = al_load_sample("Sounds/smb_coin.wav");
 		CollisionCallback onCollision = [=](Sprite *supermario, Sprite *coin) {
 			ALLEGRO_FONT* font = al_load_ttf_font("SuperPlumberBrothers.ttf", 32, NULL);
-			std::cout << y << std::endl;
-			std::cout << coin->GetBox().x << "  " << coin->GetBox().y << std::endl;
-			showText.push_back([=] {
-				al_draw_text(font, al_map_rgb(255, 255, 255), x+x, y+y+y/2, ALLEGRO_ALIGN_CENTER, "100");
-			});
-
 			al_play_sample(soundEf, 0.5, 0, 1.0, ALLEGRO_PLAYMODE_ONCE, 0);
 			EntityHolder::Get().GetSuperMario()->AddPoints(100);
 			EntityHolder::Get().GetSuperMario()->AddCoin(1);
@@ -249,7 +243,8 @@ public:
 	}
 	SpriteEntity* CreateSuperMushroom(int x, int y, Sprite* s) {
 		MovingEntity* mushroom = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("mushroom"), "mushroom", myGrid, s);
-		mushroom->SetTpe("powerup");
+		mushroom->SetType("powerup");
+		mushroom->SetPoints(1000);
 		FrameRangeAnimation walk = FrameRangeAnimation("mushroom", 0, 1, 0, 0, 0, 300000);
 		FrameRangeAnimation* death = new FrameRangeAnimation("empty", 0, 1, 1, 0, 0, 400000);
 		mushroom->SetWalkLeft(walk);
@@ -285,7 +280,7 @@ public:
 		MovingEntity* star = new MovingEntity(x, y, AnimationFilmHolder::Get().GetFilm("star"), "star", myGrid, s);
 		FrameRangeAnimation walk = FrameRangeAnimation("star", 0, 1, 0, 0, 0, 300000);
 		FrameRangeAnimation* death = new FrameRangeAnimation("empty", 0, 1, 1, 0, 0, 400000);
-		star->SetTpe("powerup");
+		star->SetType("powerup");
 		star->SetWalkLeft(walk);
 		star->SetWalkRight(walk);
 		star->SetOnDeath(
@@ -295,7 +290,7 @@ public:
 		star->SetSpeed(2);
 		star->SetSign(1);
 		star->SetEdgeDetection(false);
-
+		star->SetPoints(1000);
 		InitiateJumpModule(star, s);
 		star->StartJump(0);
 
@@ -391,7 +386,7 @@ private:
 			if (supermario->GethasStar()) {
 				DeathJump((MovingEntity*)entity);
 			}	
-			else if (marioBox.y + marioBox.h < entityBox.y + 5) {
+			else if (marioBox.y + marioBox.h < entityBox.y + 8) {
 				entity->Die();
 				supermario->Bounce();
 			}
@@ -477,7 +472,7 @@ std::function<void()> MovingEntity::Prepare_DefaultOnDeath(MovingEntity *entity,
 	return [entity, deathAnimation]() {
 		entity->StopMoving();
 		EntityHolder::Get().Remove(entity);
-		EntityHolder::Get().GetSuperMario()->AddPoints(100);
+		EntityHolder::Get().GetSuperMario()->AddPoints(entity->GetPoints());
 		CollisionChecker::GetSingleton().Cancel(entity->GetSelf());
 		FrameRangeAnimator	*deathAnimator = new FrameRangeAnimator();
 		deathAnimator->SetOnFinish(

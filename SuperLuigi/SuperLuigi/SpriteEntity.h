@@ -17,7 +17,12 @@ public:
 		self->SetRange(1, 1);
 		this->type = typeId;
 	}
-
+	SpriteEntity(int x, int y, AnimationFilm *film, std::string typeId, int zOrder) {
+		self = new Sprite(x, y, film, typeId, zOrder);
+		self->SetBoundingArea();
+		self->SetRange(1, 1);
+		this->type = typeId;
+	}
 	SpriteEntity(int x, int y, AnimationFilm* film, std::string typeId, Sprite* s) {
 		self = s;
 		self->SetBoundingArea();
@@ -78,11 +83,20 @@ public:
 		return gravityModule;
 	}
 
+	void SetPoints(int points) {
+		this->points = points;
+	}
+	int GetPoints() {
+		return points;
+	}
+
 protected:
 	std::string		type;
 	Sprite			*self;
 	int				speed = 2;
+	int				points = 100;
 	GravityModule	gravityModule;
+
 
 	// Callback functions for class customization
 	virtual void OnStartFalling() = 0;

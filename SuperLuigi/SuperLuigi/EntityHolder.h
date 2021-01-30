@@ -115,6 +115,7 @@ void DeathModule::Die() {
 			[=](Animator* animator) {
 				dead = true;
 				//hasFinished = true;
+				exit(EXIT_SUCCESS);
 				EntityHolder::Get().GetSuperMario()->MoveToCheckPoint();
 				EntityHolder::Get().GetSuperMario()->GetSelf()->Move(1, 1);
 			}
